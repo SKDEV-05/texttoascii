@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('unlocked_contacts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('scout_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('talent_id')->constrained('users')->onDelete('cascade');
+            $table->decimal('amount_paid', 10, 2);
+            $table->timestamps();
+
+            $table->unique(['scout_id', 'talent_id']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('unlocked_contacts');
+    }
+};

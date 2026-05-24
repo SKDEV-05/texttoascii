@@ -79,9 +79,25 @@ export default function Profile({
                                     placeholder="Email address"
                                 />
 
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="gender">Gender</Label>
+
+                                <select
+                                    id="gender"
+                                    name="gender"
+                                    defaultValue={auth.user.gender}
+                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+
                                 <InputError
                                     className="mt-2"
-                                    message={errors.email}
+                                    message={errors.gender}
                                 />
                             </div>
 

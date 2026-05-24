@@ -1,14 +1,12 @@
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Users, ShieldCheck, UserCircle2, Trophy } from 'lucide-react';
+import { User, Users, ShieldCheck, Trophy } from 'lucide-react';
 import { selectRole } from '@/actions/App/Http/Controllers/OnboardingController';
-import { Label } from '@/components/ui/label';
 
 export default function RoleSelection() {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing } = useForm({
         role: '',
-        gender: '',
     });
 
     const roles = [
@@ -32,16 +30,7 @@ export default function RoleSelection() {
         },
     ];
 
-    const genders = [
-        { id: 'male', label: 'Male' },
-        { id: 'female', label: 'Female' },
-    ];
-
     const handleSubmit = (roleId: string) => {
-        if (!data.gender) {
-            alert('Please select your gender first.');
-            return;
-        }
         setData('role', roleId);
         post(selectRole.url(), {
             onBefore: () => setData('role', roleId),
@@ -51,30 +40,15 @@ export default function RoleSelection() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 lg:p-10 font-sans">
             <Head title="Select Your Role" />
-            <div className="w-full max-w-5xl space-y-12">
-                <div className="text-center space-y-4">
+            <div className="w-full max-w-5xl space-y-12 text-center">
+                <div className="space-y-4">
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 text-primary mb-2">
                         <Trophy className="h-8 w-8" />
                     </div>
                     <h1 className="text-4xl font-black tracking-tight lg:text-5xl italic uppercase">Welcome to BayanMawhibtik</h1>
-                    <p className="mx-auto max-w-2xl text-lg text-muted-foreground font-medium">Your professional football journey starts here. Please select your profile type to continue.</p>
-                </div>
-
-                <div className="mx-auto max-w-sm space-y-6 bg-card p-8 rounded-3xl border border-muted-foreground/10 shadow-sm">
-                    <Label className="text-center block text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Choose Your Gender</Label>
-                    <div className="flex justify-center gap-4">
-                        {genders.map((g) => (
-                            <Button
-                                key={g.id}
-                                variant={data.gender === g.id ? 'default' : 'outline'}
-                                onClick={() => setData('gender', g.id)}
-                                className={`flex-1 h-12 rounded-xl font-bold transition-all ${data.gender === g.id ? 'shadow-lg shadow-primary/20 scale-105' : 'border-muted-foreground/20'}`}
-                            >
-                                {g.label}
-                            </Button>
-                        ))}
-                    </div>
-                    {errors.gender && <p className="text-center text-xs text-destructive font-bold">{errors.gender}</p>}
+                    <p className="mx-auto max-w-2xl text-lg text-muted-foreground font-medium">
+                        Your professional football journey starts here. Please select your profile type to continue.
+                    </p>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-3">
@@ -84,7 +58,7 @@ export default function RoleSelection() {
                         return (
                             <Card 
                                 key={role.id} 
-                                className={`group cursor-pointer transition-all duration-300 border-2 rounded-3xl overflow-hidden ${!data.gender ? 'opacity-40 grayscale pointer-events-none' : isSelected ? 'border-primary shadow-2xl scale-105 bg-primary/5' : 'border-muted-foreground/10 hover:border-primary/50 hover:shadow-xl hover:-translate-y-1'}`}
+                                className={`group cursor-pointer transition-all duration-300 border-2 rounded-3xl overflow-hidden text-left ${isSelected ? 'border-primary shadow-2xl scale-105 bg-primary/5' : 'border-muted-foreground/10 hover:border-primary/50 hover:shadow-xl hover:-translate-y-1'}`}
                                 onClick={() => !processing && handleSubmit(role.id)}
                             >
                                 <CardHeader className="p-8">
@@ -98,7 +72,7 @@ export default function RoleSelection() {
                                     <Button 
                                         className={`w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs transition-all ${isSelected ? 'bg-primary' : 'bg-transparent border-2 border-primary text-primary group-hover:bg-primary group-hover:text-white'}`}
                                         variant={isSelected ? 'default' : 'outline'}
-                                        disabled={processing || !data.gender}
+                                        disabled={processing}
                                     >
                                         Select {role.title}
                                     </Button>
@@ -111,4 +85,3 @@ export default function RoleSelection() {
         </div>
     );
 }
-

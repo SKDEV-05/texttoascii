@@ -1,12 +1,17 @@
 <?php
 
-use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\VideoController;
+use App\Http\Controllers\FollowController;
+use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TalentController;
+use App\Http\Controllers\VideoController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::get('/', [VideoController::class, 'index'])->name('home');
+Route::get('videos', [VideoController::class, 'index'])->name('videos.index');
+Route::get('videos/{video}', [VideoController::class, 'show'])->name('videos.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
@@ -15,13 +20,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('onboarding')->name('onboarding.')->group(function () {
         Route::get('role-selection', [OnboardingController::class, 'showRoleSelection'])->name('role-selection');
         Route::post('role-selection', [OnboardingController::class, 'selectRole']);
-        
+
         Route::get('talent-details', [OnboardingController::class, 'showTalentDetails'])->name('talent-details');
         Route::post('talent-details', [OnboardingController::class, 'saveTalentDetails']);
-        
+
         Route::get('institution-details', [OnboardingController::class, 'showInstitutionDetails'])->name('institution-details');
         Route::post('institution-details', [OnboardingController::class, 'saveInstitutionDetails']);
     });
+
+    Route::post('parent/talents', [OnboardingController::class, 'createChildTalent'])->name('parent.talents.store');
 
     // Chat routes
     Route::prefix('chat')->name('chat.')->group(function () {
@@ -30,17 +37,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('{conversation}', [ChatController::class, 'store'])->name('store');
     });
 
-    // Video routes
+    // Video interaction routes (auth required)
     Route::prefix('videos')->name('videos.')->group(function () {
-        Route::get('/', [VideoController::class, 'index'])->name('index');
         Route::post('/', [VideoController::class, 'store'])->name('store');
-        Route::get('{video}', [VideoController::class, 'show'])->name('show');
+        Route::post('{video}/comments', [VideoController::class, 'storeComment'])->name('comments.store');
+        Route::post('{video}/like', [VideoController::class, 'toggleLike'])->name('like.toggle');
     });
 
-    // Talent routes
-    Route::prefix('talents')->name('talents.')->group(function () {
+    // Follow routes
+    Route::post('users/{user}/follow', [FollowController::class, 'toggle'])->name('users.follow');
+
+    // Talent routes — scouts only
+    Route::middleware('role:scout_club')->prefix('talents')->name('talents.')->group(function () {
+        Route::get('/', [TalentController::class, 'index'])->name('index');
         Route::get('{talent}', [TalentController::class, 'show'])->name('show');
+        Route::post('{talent}/unlock', [TalentController::class, 'unlockContact'])->name('unlock');
     });
+
+    // Wallet routes
+    Route::prefix('wallet')->name('wallet.')->group(function () {
+        Route::get('/', [WalletController::class, 'index'])->name('index');
+        Route::post('topup', [WalletController::class, 'topup'])->name('topup');
+        Route::post('transfer', [WalletController::class, 'transfer'])->name('transfer');
+    });
+
+    // Subscription routes
+    Route::post('subscription/buy-pro', [SubscriptionController::class, 'buyPro'])->name('subscription.buy-pro');
 });
 
 require __DIR__.'/settings.php';

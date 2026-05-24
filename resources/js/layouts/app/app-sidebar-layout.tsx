@@ -7,12 +7,14 @@ import type { AppLayoutProps } from '@/types';
 export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
-}: AppLayoutProps) {
+    hideHeader = false,
+    contentClassName = '',
+}: AppLayoutProps & { hideHeader?: boolean; contentClassName?: string }) {
     return (
-        <AppShell variant="sidebar">
+        <AppShell>
             <AppSidebar />
-            <AppContent variant="sidebar" className="overflow-x-hidden">
-                <AppSidebarHeader breadcrumbs={breadcrumbs} />
+            <AppContent variant="sidebar" className={`overflow-x-hidden ${contentClassName}`}>
+                {!hideHeader && <AppSidebarHeader breadcrumbs={breadcrumbs} />}
                 {children}
             </AppContent>
         </AppShell>

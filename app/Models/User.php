@@ -16,7 +16,7 @@ use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'gender', 'avatar_path', 'onboarding_progress'])]
+#[Fillable(['name', 'email', 'password', 'role', 'gender', 'wallet_balance', 'layout', 'avatar_path', 'onboarding_progress'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -78,6 +78,38 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasMany(Conversation::class, 'initiator_id')->orWhere('recipient_id', $this->id);
     }
 
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function unlockedContacts(): HasMany
+    {
+        return $this->hasMany(UnlockedContact::class, 'scout_id');
+    }
+
+    public function receivedUnlocks(): HasMany
+    {
+        return $this->hasMany(UnlockedContact::class, 'talent_id');
+    }
+
+    /** Users this user is following */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')->withTimestamps();
+    }
+
+    /** Users who follow this user */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')->withTimestamps();
+    }
+
+    public function isFollowing(int $userId): bool
+    {
+        return $this->following()->where('following_id', $userId)->exists();
+    }
+
     /**
      * Check if the user can upload more videos.
      * Free users are limited to 5 videos.
@@ -110,11 +142,15 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Check if the user can see talent contact information.
-     * Requires an active subscription for scouts/clubs.
+     * Requires an active subscription for scouts/clubs or a purchased contact unlock.
      */
-    public function canSeeContactInfo(): bool
+    public function canSeeContactInfo(?User $talent = null): bool
     {
         if ($this->role === 'admin' || $this->role === 'talent' || $this->role === 'parent') {
+            return true;
+        }
+
+        if ($talent && $this->unlockedContacts()->where('talent_id', $talent->id)->exists()) {
             return true;
         }
 
