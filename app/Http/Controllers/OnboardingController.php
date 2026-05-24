@@ -65,7 +65,7 @@ class OnboardingController extends Controller
             // Parent creating their first child profile
             $child = User::create([
                 'name' => $validated['display_name'],
-                'email' => 'talent-'.uniqid().'@bayanmawhibtik.com',
+                'email' => 'talent-'.uniqid().'@endotalent.com',
                 'password' => bcrypt(Str::random(16)),
                 'role' => 'talent',
                 'gender' => $user->gender,
@@ -144,7 +144,7 @@ class OnboardingController extends Controller
 
         $child = User::create([
             'name' => $validated['display_name'],
-            'email' => 'talent-'.uniqid().'@bayanmawhibtik.com',
+            'email' => 'talent-'.uniqid().'@endotalent.com',
             'password' => bcrypt(Str::random(16)),
             'role' => 'talent',
             'gender' => $user->gender,

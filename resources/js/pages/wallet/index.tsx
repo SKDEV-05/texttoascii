@@ -74,7 +74,7 @@ export default function WalletIndex({ transactions }: Props) {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <p className="text-xs font-black uppercase tracking-widest opacity-60">Platform Wallet</p>
-                                    <p className="text-2xl font-black italic tracking-tighter uppercase mt-1">BayanMawhibtik</p>
+                                    <p className="text-2xl font-black italic tracking-tighter uppercase mt-1">EndoTalent</p>
                                 </div>
                                 <CreditCard className="h-8 w-8 opacity-80" />
                             </div>

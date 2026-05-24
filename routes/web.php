@@ -1,15 +1,24 @@
 <?php
 
+use App\Http\Controllers\CallController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TalentController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::get('/', [VideoController::class, 'index'])->name('home');
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('videos.index');
+    }
+
+    return Inertia::render('welcome');
+})->name('home');
 Route::get('videos', [VideoController::class, 'index'])->name('videos.index');
 Route::get('videos/{video}', [VideoController::class, 'show'])->name('videos.show');
 
@@ -33,9 +42,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Chat routes
     Route::prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [ChatController::class, 'index'])->name('index');
+        Route::post('start/{user}', [ChatController::class, 'startConversation'])->name('start');
         Route::get('{conversation}', [ChatController::class, 'show'])->name('show');
         Route::post('{conversation}', [ChatController::class, 'store'])->name('store');
+        Route::post('{conversation}/pay', [ChatController::class, 'pay'])->name('pay');
+        Route::post('{conversation}/voice', [ChatController::class, 'voice'])->name('voice');
+        Route::post('{conversation}/read', [ChatController::class, 'markRead'])->name('read');
     });
+
+    // Call routes
+    Route::prefix('call')->name('call.')->group(function () {
+        Route::post('{conversation}/start', [CallController::class, 'start'])->name('start');
+        Route::post('{conversation}/signal', [CallController::class, 'signal'])->name('signal');
+    });
+
+    // Report routes
+    Route::post('reports', [ReportController::class, 'store'])->name('reports.store');
 
     // Video interaction routes (auth required)
     Route::prefix('videos')->name('videos.')->group(function () {

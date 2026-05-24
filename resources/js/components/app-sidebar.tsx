@@ -71,9 +71,9 @@ export function AppSidebar() {
             {/* Header / Logo */}
             <SidebarHeader className="p-0 flex flex-col">
                 <Link href="/" className="flex items-center gap-3 px-6 py-5 select-none">
-                    <AppLogoIcon className="size-9 text-primary shrink-0 transition-transform hover:rotate-12 duration-300" />
+                    <AppLogoIcon className="size-11 text-primary shrink-0 transition-transform hover:rotate-12 duration-300" />
                     <span className="font-black text-[18px] italic tracking-tight text-zinc-950 uppercase">
-                        BayanMawhibtik
+                        EndoTalent
                     </span>
                 </Link>
 
@@ -150,7 +150,7 @@ export function AppSidebar() {
                             <Link href="/privacy" className="hover:underline">Privacy</Link>
                         </div>
                         <span className="text-[10px] font-bold text-zinc-400 mt-4 block">
-                            © {new Date().getFullYear()} BayanMawhibtik
+                            © {new Date().getFullYear()} EndoTalent
                         </span>
                     </div>
                 )}

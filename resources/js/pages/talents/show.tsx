@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Mail, MessageSquare, Lock, Eye, Footprints, Scale, Compass, Trophy } from 'lucide-react';
 import PitchAvatar from '@/components/pitch-avatar';
 import AppLayout from '@/layouts/app-layout';
+import { start } from '@/routes/chat';
+import { unlock } from '@/routes/talents';
 
 interface Props {
     talent: {
@@ -27,7 +29,7 @@ interface Props {
 
 export default function TalentShow({ talent, canSeeContactInfo }: Props) {
     const handleUnlock = () => {
-        router.post(`/talents/${talent.id}/unlock`, {}, {
+        router.post(unlock(talent.id).url, {}, {
             preserveScroll: true,
         });
     };
@@ -67,6 +69,14 @@ export default function TalentShow({ talent, canSeeContactInfo }: Props) {
                                     </div>
                                 </div>
                             </CardContent>
+                        </div>
+                        <div className="p-6 border-t border-muted-foreground/10 bg-muted/5">
+                            <Button 
+                                onClick={() => router.post(start(talent.user.id).url)}
+                                className="w-full h-11 rounded-xl font-bold uppercase tracking-wider gap-2 shadow-sm"
+                            >
+                                <MessageSquare className="h-4.5 w-4.5" /> Message Talent
+                            </Button>
                         </div>
                     </Card>
 
@@ -112,21 +122,27 @@ export default function TalentShow({ talent, canSeeContactInfo }: Props) {
                                     <div className="rounded-3xl border-2 border-dashed border-muted-foreground/20 p-12 text-center bg-muted/10 space-y-6">
                                         <Lock className="mx-auto h-12 w-12 text-muted-foreground opacity-30" />
                                         <div className="space-y-2">
-                                            <p className="text-xl font-extrabold uppercase">Contact info is locked</p>
+                                            <p className="text-xl font-extrabold uppercase">Contact info & chat are locked</p>
                                             <p className="text-muted-foreground max-w-md mx-auto text-sm">
-                                                To view direct contact details (email/phone) for this talent, you can unlock it using your wallet credits.
+                                                Subscribe to Pro, unlock the contact details with your wallet credits, or start a direct conversation.
                                             </p>
                                         </div>
                                         
-                                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto pt-4">
+                                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-xl mx-auto pt-4">
                                             <Button 
                                                 onClick={handleUnlock}
                                                 className="w-full sm:w-auto h-12 px-8 rounded-xl font-bold shadow-lg shadow-primary/20"
                                             >
-                                                Unlock for 50 Credits
+                                                Unlock Contact (50 Credits)
                                             </Button>
-                                            <span className="text-xs text-muted-foreground font-semibold">or</span>
-                                            <Link href="/wallet" className="text-primary hover:underline font-bold text-sm">
+                                            <Button 
+                                                onClick={() => router.post(start(talent.user.id).url)}
+                                                variant="secondary"
+                                                className="w-full sm:w-auto h-12 px-8 rounded-xl font-bold border border-muted-foreground/10"
+                                            >
+                                                Start Chat (10 Credits)
+                                            </Button>
+                                            <Link href="/wallet" className="text-primary hover:underline font-bold text-sm shrink-0">
                                                 Top Up Wallet
                                             </Link>
                                         </div>

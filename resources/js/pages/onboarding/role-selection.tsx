@@ -45,7 +45,7 @@ export default function RoleSelection() {
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 text-primary mb-2">
                         <Trophy className="h-8 w-8" />
                     </div>
-                    <h1 className="text-4xl font-black tracking-tight lg:text-5xl italic uppercase">Welcome to BayanMawhibtik</h1>
+                    <h1 className="text-4xl font-black tracking-tight lg:text-5xl italic uppercase">Welcome to EndoTalent</h1>
                     <p className="mx-auto max-w-2xl text-lg text-muted-foreground font-medium">
                         Your professional football journey starts here. Please select your profile type to continue.
                     </p>

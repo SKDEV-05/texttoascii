@@ -14,11 +14,15 @@ class Message extends Model
         'conversation_id',
         'sender_id',
         'body',
+        'type',
+        'media_path',
+        'duration',
         'read_at',
     ];
 
     protected $casts = [
         'read_at' => 'datetime',
+        'duration' => 'integer',
     ];
 
     public function conversation(): BelongsTo
@@ -29,5 +33,13 @@ class Message extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    /**
+     * Get the full URL for media files (voice messages, images).
+     */
+    public function getMediaUrlAttribute(): ?string
+    {
+        return $this->media_path ? asset($this->media_path) : null;
     }
 }

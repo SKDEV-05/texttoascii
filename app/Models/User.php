@@ -124,20 +124,43 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
-     * Check if the scout/club can send more messages.
-     * Free scouts/clubs are limited to 3 messages.
+     * Check if the scout/club can send messages in a conversation.
+     * Scouts must pay for the conversation or have an active subscription.
      */
-    public function canSendMessage(): bool
+    public function canSendMessageIn(?Conversation $conversation = null): bool
     {
-        if ($this->activeSubscription()->exists()) {
-            return true;
-        }
-
+        // Non-scouts can always message
         if ($this->role !== 'scout_club') {
             return true;
         }
 
-        return $this->messages()->count() < 3;
+        // Active subscribers can always message
+        if ($this->activeSubscription()->exists()) {
+            return true;
+        }
+
+        // If a conversation is provided, check if it's paid
+        if ($conversation && $conversation->is_paid) {
+            return true;
+        }
+
+        // Check if the talent in this conversation is already unlocked
+        if ($conversation) {
+            $otherUserId = $conversation->initiator_id === $this->id
+                ? $conversation->recipient_id
+                : $conversation->initiator_id;
+
+            if ($this->unlockedContacts()->where('talent_id', $otherUserId)->exists()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
     }
 
     /**
