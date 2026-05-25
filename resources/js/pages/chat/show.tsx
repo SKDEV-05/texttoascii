@@ -123,20 +123,10 @@ export default function ChatShow({ conversation, messages: initialMessages, canS
                     playNotificationSound();
                     axios.post(readMessage(conversation.id).url);
                 }
-            })
-            .listen('.call.started', (e: { conversation_id: number, caller_id: number, caller_name: string, call_type: 'voice' | 'video' }) => {
-                console.log('Call started event received:', e);
-                if (e.caller_id !== auth.user.id) {
-                    setCallType(e.call_type);
-                    setActiveCallerName(e.caller_name);
-                    setIsIncomingCall(true);
-                    setIsCallOpen(true);
-                }
             });
 
         return () => {
             chatChannel.stopListening('.message.sent');
-            chatChannel.stopListening('.call.started');
         };
     }, [echoInstance, conversation.id]);
 
@@ -203,7 +193,20 @@ export default function ChatShow({ conversation, messages: initialMessages, canS
 
     const formatTime = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (compareDate.getTime() === today.getTime()) {
+            return `Today at ${timeStr}`;
+        } else if (compareDate.getTime() === yesterday.getTime()) {
+            return `Yesterday at ${timeStr}`;
+        } else {
+            return `${date.toLocaleDateString()} ${timeStr}`;
+        }
     };
 
     return (

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CallController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FollowController;
@@ -85,6 +86,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Subscription routes
     Route::post('subscription/buy-pro', [SubscriptionController::class, 'buyPro'])->name('subscription.buy-pro');
+
+    // Admin routes
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::delete('users/{user}', [AdminController::class, 'deleteUser'])->name('users.delete');
+        Route::post('users/{user}/wallet', [AdminController::class, 'updateWallet'])->name('users.wallet');
+        Route::post('reports/{report}/resolve', [AdminController::class, 'resolveReport'])->name('reports.resolve');
+        Route::delete('reports/{report}', [AdminController::class, 'deleteReport'])->name('reports.delete');
+    });
 });
 
 require __DIR__.'/settings.php';

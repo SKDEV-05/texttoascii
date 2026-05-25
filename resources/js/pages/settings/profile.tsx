@@ -82,6 +82,25 @@ export default function Profile({
                             </div>
 
                             <div className="grid gap-2">
+                                <Label htmlFor="phone">Phone Number</Label>
+
+                                <Input
+                                    id="phone"
+                                    type="tel"
+                                    className="mt-1 block w-full"
+                                    defaultValue={auth.user.phone}
+                                    name="phone"
+                                    required
+                                    placeholder="Phone number"
+                                />
+
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.phone}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
                                 <Label htmlFor="gender">Gender</Label>
 
                                 <select

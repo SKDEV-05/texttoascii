@@ -144,7 +144,20 @@ export default function ChatIndex({ conversations, auth }: Props) {
     const formatTime = (dateString?: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (compareDate.getTime() === today.getTime()) {
+            return `Today at ${timeStr}`;
+        } else if (compareDate.getTime() === yesterday.getTime()) {
+            return `Yesterday at ${timeStr}`;
+        } else {
+            return `${date.toLocaleDateString()} ${timeStr}`;
+        }
     };
 
     return (

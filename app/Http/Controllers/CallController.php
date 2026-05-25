@@ -48,7 +48,7 @@ class CallController extends Controller
 
         $request->validate([
             'type' => 'required|string',
-            'data' => 'required|array',
+            'data' => 'present|array',
         ]);
 
         broadcast(new CallSignal(

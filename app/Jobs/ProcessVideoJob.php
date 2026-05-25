@@ -3,14 +3,14 @@
 namespace App\Jobs;
 
 use App\Models\Video;
+use FFMpeg\Format\Video\X264;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Facades\Storage;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ProcessVideoJob implements ShouldQueue
 {
@@ -19,9 +19,7 @@ class ProcessVideoJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public Video $video)
-    {
-    }
+    public function __construct(public Video $video) {}
 
     /**
      * Execute the job.
@@ -32,8 +30,8 @@ class ProcessVideoJob implements ShouldQueue
 
         $lowBitrateFormat = (new X264('libmp3lame', 'libx264'))->setKiloBitrate(1000);
 
-        $tempPath = 'temp/' . $this->video->id . '.mp4';
-        $thumbnailPath = 'thumbnails/' . $this->video->id . '.jpg';
+        $tempPath = 'temp/'.$this->video->id.'.mp4';
+        $thumbnailPath = 'thumbnails/'.$this->video->id.'.jpg';
 
         try {
             $ffmpeg = FFMpeg::fromDisk('local')

@@ -25,6 +25,7 @@ export default function Register({ passwordRules }: Props) {
         name: '',
         email: '',
         gender: '',
+        phone: '',
         password: '',
         password_confirmation: '',
     });
@@ -92,11 +93,26 @@ export default function Register({ passwordRules }: Props) {
                     </div>
 
                     <div className="grid gap-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            required
+                            tabIndex={4}
+                            name="phone"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                            placeholder="+1 555-5555"
+                        />
+                        <InputError message={errors.phone} />
+                    </div>
+
+                    <div className="grid gap-2">
                         <Label htmlFor="password">Password</Label>
                         <PasswordInput
                             id="password"
                             required
-                            tabIndex={4}
+                            tabIndex={5}
                             autoComplete="new-password"
                             name="password"
                             value={data.password}
@@ -114,7 +130,7 @@ export default function Register({ passwordRules }: Props) {
                         <PasswordInput
                             id="password_confirmation"
                             required
-                            tabIndex={5}
+                            tabIndex={6}
                             autoComplete="new-password"
                             name="password_confirmation"
                             value={data.password_confirmation}
@@ -130,7 +146,7 @@ export default function Register({ passwordRules }: Props) {
                     <Button
                         type="submit"
                         className="mt-2 w-full"
-                        tabIndex={6}
+                        tabIndex={7}
                         disabled={processing}
                         data-test="register-user-button"
                     >

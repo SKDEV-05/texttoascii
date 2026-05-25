@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Conversation;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -28,8 +29,14 @@ class CallStarted implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
+        $conversation = Conversation::find($this->conversationId);
+        $recipientId = $conversation->initiator_id === $this->callerId
+            ? $conversation->recipient_id
+            : $conversation->initiator_id;
+
         return [
             new PrivateChannel('chat.'.$this->conversationId),
+            new PrivateChannel('App.Models.User.'.$recipientId),
         ];
     }
 

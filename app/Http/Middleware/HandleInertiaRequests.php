@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,6 +50,12 @@ class HandleInertiaRequests extends Middleware
                     'layout' => $request->user()->layout,
                     'avatar_path' => $request->user()->avatar_path,
                     'onboarding_progress' => $request->user()->onboarding_progress,
+                    'unread_count' => Message::whereIn('conversation_id', function ($query) use ($request) {
+                        $query->select('id')
+                            ->from('conversations')
+                            ->where('initiator_id', $request->user()->id)
+                            ->orWhere('recipient_id', $request->user()->id);
+                    })->where('sender_id', '!=', $request->user()->id)->whereNull('read_at')->count(),
                     'talent_profile' => $request->user()->talentProfile ? [
                         'id' => $request->user()->talentProfile->id,
                         'display_name' => $request->user()->talentProfile->display_name,

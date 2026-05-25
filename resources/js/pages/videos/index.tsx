@@ -1,7 +1,7 @@
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { useRef, useEffect, useState } from 'react';
-import { Heart, MessageCircle, Share2, Plus, Upload, Film, AlertTriangle, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Plus, Upload, Film, AlertTriangle, X, Maximize2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -11,13 +11,31 @@ import { Textarea } from '@/components/ui/textarea';
 
 interface Comment {
     id: number;
+    parent_id?: number | null;
     comment: string;
     created_at: string;
     user: {
         name: string;
         avatar_path: string;
     };
+    replies?: Comment[];
 }
+
+const formatRelativeDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    if (compareDate.getTime() === today.getTime()) {
+        return 'Today';
+    } else if (compareDate.getTime() === yesterday.getTime()) {
+        return 'Yesterday';
+    } else {
+        return date.toLocaleDateString();
+    }
+};
 
 interface Video {
     id: number;
@@ -61,8 +79,11 @@ export default function VideoFeed({ videos }: Props) {
         talent_profile_id: '',
     });
 
+    const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
+
     const { data: commentData, setData: setCommentData, post: postComment, processing: commentProcessing, reset: resetComment } = useForm({
         comment: '',
+        parent_id: null as number | null,
     });
 
     const canUpload = user && (user.role === 'talent' || user.role === 'parent');
@@ -88,6 +109,16 @@ export default function VideoFeed({ videos }: Props) {
         });
     };
 
+    const handleReplyClick = (comment: Comment) => {
+        setReplyTo({ id: comment.id, name: comment.user.name });
+        setCommentData('parent_id', comment.id);
+    };
+
+    const handleCancelReply = () => {
+        setReplyTo(null);
+        setCommentData('parent_id', null);
+    };
+
     const handleCommentSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!openCommentsVideoId) return;
@@ -95,7 +126,8 @@ export default function VideoFeed({ videos }: Props) {
         postComment(`/videos/${openCommentsVideoId}/comments`, {
             preserveScroll: true,
             onSuccess: () => {
-                resetComment('comment');
+                resetComment('comment', 'parent_id');
+                setReplyTo(null);
             }
         });
     };
@@ -224,22 +256,57 @@ export default function VideoFeed({ videos }: Props) {
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {activeVideo.comments && activeVideo.comments.length > 0 ? (
                                 activeVideo.comments.map((comment) => (
-                                    <div key={comment.id} className="flex items-start gap-3 text-left">
-                                        <Avatar className="h-8 w-8 border border-primary/20">
-                                            <AvatarImage src={comment.user?.avatar_path} />
-                                            <AvatarFallback className="bg-primary text-white text-xs font-bold uppercase">
-                                                {comment.user?.name?.[0] || 'U'}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1 space-y-1">
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-bold text-xs">@{comment.user?.name}</span>
-                                                <span className="text-[9px] text-zinc-500">
-                                                    {new Date(comment.created_at).toLocaleDateString()}
-                                                </span>
+                                    <div key={comment.id} className="space-y-3">
+                                        <div className="flex items-start gap-3 text-left">
+                                            <Avatar className="h-8 w-8 border border-primary/20 shrink-0">
+                                                <AvatarImage src={comment.user?.avatar_path} />
+                                                <AvatarFallback className="bg-primary text-white text-xs font-bold uppercase">
+                                                    {comment.user?.name?.[0] || 'U'}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 space-y-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-bold text-xs text-zinc-900">@{comment.user?.name}</span>
+                                                    <span className="text-[9px] text-zinc-500">
+                                                        {formatRelativeDate(comment.created_at)}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-zinc-700 leading-relaxed">{comment.comment}</p>
+                                                {user && (
+                                                    <button
+                                                        onClick={() => handleReplyClick(comment)}
+                                                        className="text-[10px] font-black uppercase tracking-wider text-primary hover:text-primary/80 pt-1"
+                                                    >
+                                                        Reply
+                                                    </button>
+                                                )}
                                             </div>
-                                            <p className="text-xs text-zinc-600 leading-relaxed">{comment.comment}</p>
                                         </div>
+
+                                        {/* Nested Replies */}
+                                        {comment.replies && comment.replies.length > 0 && (
+                                            <div className="pl-6 space-y-3 border-l-2 border-zinc-100 ml-4">
+                                                {comment.replies.map((reply) => (
+                                                    <div key={reply.id} className="flex items-start gap-3 text-left">
+                                                        <Avatar className="h-7 w-7 border border-primary/10 shrink-0">
+                                                            <AvatarImage src={reply.user?.avatar_path} />
+                                                            <AvatarFallback className="bg-zinc-200 text-zinc-700 text-[10px] font-bold uppercase">
+                                                                {reply.user?.name?.[0] || 'U'}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1 space-y-0.5">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="font-bold text-[11px] text-zinc-800">@{reply.user?.name}</span>
+                                                                <span className="text-[8px] text-zinc-500">
+                                                                    {formatRelativeDate(reply.created_at)}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-xs text-zinc-600 leading-relaxed">{reply.comment}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                             ) : (
@@ -253,23 +320,38 @@ export default function VideoFeed({ videos }: Props) {
                         {/* Drawer Bottom Input bar */}
                         <div className="p-4 border-t border-zinc-200 bg-zinc-50">
                             {user ? (
-                                <form onSubmit={handleCommentSubmit} className="flex gap-2">
-                                    <Input
-                                        type="text"
-                                        placeholder="Add comment..."
-                                        value={commentData.comment}
-                                        onChange={e => setCommentData('comment', e.target.value)}
-                                        className="bg-white border-zinc-200 rounded-xl h-10 text-xs focus-visible:ring-primary text-zinc-900 placeholder:text-zinc-400 flex-1"
-                                        required
-                                    />
-                                    <Button 
-                                        type="submit" 
-                                        disabled={commentProcessing}
-                                        className="bg-primary hover:bg-primary/90 text-white rounded-xl h-10 font-bold px-4 text-xs uppercase"
-                                    >
-                                        Post
-                                    </Button>
-                                </form>
+                                <div className="space-y-2">
+                                    {replyTo && (
+                                        <div className="flex items-center justify-between bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-lg">
+                                            <span className="text-[10px] font-bold text-primary uppercase">
+                                                Replying to @{replyTo.name}
+                                            </span>
+                                            <button 
+                                                onClick={handleCancelReply}
+                                                className="p-0.5 rounded-full hover:bg-primary/20 text-primary transition-all"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    <form onSubmit={handleCommentSubmit} className="flex gap-2">
+                                        <Input
+                                            type="text"
+                                            placeholder="Add comment..."
+                                            value={commentData.comment}
+                                            onChange={e => setCommentData('comment', e.target.value)}
+                                            className="bg-white border-zinc-200 rounded-xl h-10 text-xs focus-visible:ring-primary text-zinc-900 placeholder:text-zinc-400 flex-1"
+                                            required
+                                        />
+                                        <Button 
+                                            type="submit" 
+                                            disabled={commentProcessing}
+                                            className="bg-primary hover:bg-primary/90 text-white rounded-xl h-10 font-bold px-4 text-xs uppercase"
+                                        >
+                                            Post
+                                        </Button>
+                                    </form>
+                                </div>
                             ) : (
                                 <Link href="/login" className="block w-full">
                                     <Button className="w-full bg-primary hover:bg-primary/90 text-white font-extrabold rounded-xl uppercase tracking-wider h-11 text-xs shadow-lg shadow-primary/20">
@@ -407,6 +489,8 @@ function VideoItem({
 }) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isLandscape, setIsLandscape] = useState(video.orientation === 'horizontal');
 
     useEffect(() => {
         const options = {
@@ -418,8 +502,10 @@ function VideoItem({
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    videoRef.current?.play().catch(() => {});
-                    setIsPlaying(true);
+                    if (!isFullscreen) {
+                        videoRef.current?.play().catch(() => {});
+                        setIsPlaying(true);
+                    }
                     onVisible(index);
                 } else {
                     videoRef.current?.pause();
@@ -433,7 +519,7 @@ function VideoItem({
         }
 
         return () => observer.disconnect();
-    }, [index]);
+    }, [index, isFullscreen]);
 
     const togglePlay = () => {
         if (videoRef.current) {
@@ -443,6 +529,30 @@ function VideoItem({
                 videoRef.current.play().catch(() => {});
             }
             setIsPlaying(!isPlaying);
+        }
+    };
+
+    const toggleFullscreen = () => {
+        if (videoRef.current) {
+            if (!isFullscreen) {
+                videoRef.current.pause();
+                setIsPlaying(false);
+            } else {
+                // Resume playing the normal feed when closing fullscreen
+                setTimeout(() => {
+                    videoRef.current?.play().catch(() => {});
+                    setIsPlaying(true);
+                }, 100);
+            }
+        }
+        setIsFullscreen(!isFullscreen);
+    };
+
+    const handleLoadedMetadata = () => {
+        if (videoRef.current) {
+            // Automatically detect if the video aspect ratio is landscape/horizontal
+            const isHorizontal = videoRef.current.videoWidth > videoRef.current.videoHeight;
+            setIsLandscape(isHorizontal);
         }
     };
 
@@ -459,6 +569,7 @@ function VideoItem({
                         loop
                         playsInline
                         onClick={togglePlay}
+                        onLoadedMetadata={handleLoadedMetadata}
                     />
                     
                     {/* Bottom left info overlay - styled like TikTok */}
@@ -544,8 +655,47 @@ function VideoItem({
                         </div>
                         <span className="text-xs font-bold text-zinc-500">Share</span>
                     </button>
+
+                    {/* Fullscreen Maximize button */}
+                    <button 
+                        onClick={toggleFullscreen}
+                        className="flex flex-col items-center gap-1 group"
+                        title="Fullscreen"
+                    >
+                        <div className="h-11 w-11 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-800 hover:bg-zinc-200 transition-all shadow-sm">
+                            <Maximize2 className="h-5.5 w-5.5 text-zinc-850" />
+                        </div>
+                        <span className="text-xs font-bold text-zinc-500">Full</span>
+                    </button>
                 </div>
             </div>
+
+            {/* Custom Fullscreen Overlay with Animation */}
+            {isFullscreen && (
+                <div className="fixed inset-0 bg-black/95 z-[999] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-300">
+                    {/* Close button */}
+                    <button 
+                        onClick={toggleFullscreen}
+                        className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 text-white hover:text-zinc-200 rounded-full transition-all border border-white/10 z-50 shadow-lg"
+                    >
+                        <X className="h-6 w-6" />
+                    </button>
+                    
+                    {/* Fullscreen Video Player */}
+                    <div className={`relative max-w-full max-h-full flex items-center justify-center transition-all duration-500 ease-out transform scale-100 opacity-100 ${
+                        isLandscape ? 'w-full max-w-4xl aspect-video' : 'h-full max-h-[90vh] aspect-[9/16]'
+                    }`}>
+                        <video
+                            src={video.file_path}
+                            className="w-full h-full object-contain rounded-2xl shadow-2xl border border-white/5"
+                            autoPlay
+                            loop
+                            playsInline
+                            controls
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

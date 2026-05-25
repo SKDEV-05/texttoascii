@@ -19,6 +19,7 @@ trait ProfileValidationRules
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
             'gender' => ['nullable', 'string', 'in:male,female,other'],
+            'phone' => ['required', 'string', 'max:20'],
             'layout' => ['nullable', 'string', 'in:sidebar,header'],
         ];
     }

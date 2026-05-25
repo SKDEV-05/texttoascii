@@ -19,6 +19,24 @@ interface Props {
     transactions: Transaction[];
 }
 
+const formatRelativeDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (compareDate.getTime() === today.getTime()) {
+        return `Today at ${timeStr}`;
+    } else if (compareDate.getTime() === yesterday.getTime()) {
+        return `Yesterday at ${timeStr}`;
+    } else {
+        return `${date.toLocaleDateString()} ${timeStr}`;
+    }
+};
+
 export default function WalletIndex({ transactions }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const user = auth.user;
@@ -198,7 +216,7 @@ export default function WalletIndex({ transactions }: Props) {
                                                     </div>
                                                     <div className="text-left">
                                                         <p className="font-bold text-sm uppercase tracking-tight">{tx.description}</p>
-                                                        <p className="text-[10px] text-muted-foreground font-semibold mt-0.5">{new Date(tx.created_at).toLocaleString()}</p>
+                                                        <p className="text-[10px] text-muted-foreground font-semibold mt-0.5">{formatRelativeDate(tx.created_at)}</p>
                                                     </div>
                                                 </div>
                                                 <p className={`font-black text-base ${isCredit ? 'text-green-500' : 'text-red-500'}`}>

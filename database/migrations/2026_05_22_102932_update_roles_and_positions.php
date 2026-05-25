@@ -19,8 +19,8 @@ return new class extends Migration
         Schema::table('talent_profiles', function (Blueprint $table) {
             // Adding new positions: AMF, CMD, CF
             $table->enum('position', [
-                'GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LW', 'RW', 'ST', 
-                'AMF', 'CMD', 'CF'
+                'GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LW', 'RW', 'ST',
+                'AMF', 'CMD', 'CF',
             ])->change();
         });
 

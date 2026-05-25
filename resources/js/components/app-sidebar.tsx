@@ -1,5 +1,5 @@
 import { Link, usePage, router } from '@inertiajs/react';
-import { LayoutGrid, Video, MessageSquare, Users, Wallet, Search } from 'lucide-react';
+import { LayoutGrid, Video, MessageSquare, Users, Wallet, Search, Shield } from 'lucide-react';
 import { useState } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavUser } from '@/components/nav-user';
@@ -12,7 +12,15 @@ import {
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 
-export function AppSidebar() {
+export function AppSidebar({
+    variant = 'sidebar',
+    collapsible = 'icon',
+    side = 'left'
+}: {
+    variant?: 'sidebar' | 'floating' | 'inset';
+    collapsible?: 'icon' | 'offcanvas' | 'none';
+    side?: 'left' | 'right';
+}) {
     const { auth } = usePage<any>().props;
     const user = auth?.user;
     const { isCurrentUrl } = useCurrentUrl();
@@ -56,18 +64,27 @@ export function AppSidebar() {
             icon: LayoutGrid,
             authRequired: true,
         },
+        {
+            title: 'Admin Panel',
+            href: '/admin',
+            icon: Shield,
+            authRequired: true,
+            adminOnly: true,
+        },
     ];
 
     // Filter items based on auth status and role
     const isScout = user?.role === 'scout_club';
+    const isAdmin = user?.role === 'admin';
     const activeNavItems = mainNavItems.filter(item => {
         if (item.authRequired && !user) return false;
         if (item.scoutOnly && !isScout) return false;
+        if (item.adminOnly && !isAdmin) return false;
         return true;
     });
 
     return (
-        <Sidebar collapsible="none" className="border-r border-zinc-100 bg-white" dir="ltr">
+        <Sidebar collapsible={collapsible} variant={variant} side={side} className="border-r border-zinc-100 bg-white" dir="ltr">
             {/* Header / Logo */}
             <SidebarHeader className="p-0 flex flex-col">
                 <Link href="/" className="flex items-center gap-3 px-6 py-5 select-none">
@@ -109,7 +126,12 @@ export function AppSidebar() {
                             }`}
                         >
                             <item.icon className={`h-6 w-6 stroke-[2.5] transition-transform group-hover:scale-105 ${isActive ? 'text-primary' : 'text-zinc-400 group-hover:text-zinc-700'}`} />
-                            <span className="text-[15px] tracking-tight">{item.title}</span>
+                            <span className="text-[15px] tracking-tight flex-1">{item.title}</span>
+                            {item.title === 'Messages' && user?.unread_count > 0 && (
+                                <span className="h-5 min-w-5 px-1.5 bg-primary text-primary-foreground text-[10px] font-black rounded-full flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
+                                    {user.unread_count}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

@@ -30,6 +30,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => $input['email'],
             'password' => $input['password'],
             'gender' => $input['gender'],
+            'phone' => $input['phone'],
             'role' => 'talent', // Default role, will be updated in onboarding
         ]);
     }

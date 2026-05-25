@@ -20,7 +20,9 @@ class VideoController extends Controller
         // Pre-load the authenticated user's following IDs for efficient lookups
         $followingIds = $user ? $user->following()->pluck('follows.following_id')->flip() : collect();
 
-        $videos = Video::with(['user', 'talentProfile', 'comments.user', 'likes'])
+        $videos = Video::with(['user', 'talentProfile', 'comments' => function ($query) {
+            $query->whereNull('parent_id')->with(['user', 'replies.user'])->latest();
+        }, 'likes'])
             ->withCount(['likes', 'comments'])
             ->where('is_published', true)
             ->latest()
@@ -105,7 +107,9 @@ class VideoController extends Controller
     public function show(Video $video): Response
     {
         return Inertia::render('videos/show', [
-            'video' => $video->load(['user', 'talentProfile', 'comments.user']),
+            'video' => $video->load(['user', 'talentProfile', 'comments' => function ($query) {
+                $query->whereNull('parent_id')->with(['user', 'replies.user'])->latest();
+            }]),
         ]);
     }
 
@@ -116,10 +120,12 @@ class VideoController extends Controller
     {
         $request->validate([
             'comment' => 'required|string|max:1000',
+            'parent_id' => 'nullable|exists:video_comments,id',
         ]);
 
         $video->comments()->create([
             'user_id' => auth()->id(),
+            'parent_id' => $request->parent_id,
             'comment' => $request->comment,
         ]);
 
