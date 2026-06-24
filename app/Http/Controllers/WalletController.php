@@ -52,12 +52,16 @@ class WalletController extends Controller
 
     public function transfer(Request $request): RedirectResponse
     {
+        $sender = auth()->user();
+
+        if (in_array($sender->role, ['talent', 'parent'])) {
+            abort(403, 'Talents and Parents are not allowed to transfer money.');
+        }
+
         $validated = $request->validate([
             'email' => 'required|email|exists:users,email',
             'amount' => 'required|numeric|min:1',
         ]);
-
-        $sender = auth()->user();
 
         if ($sender->email === $validated['email']) {
             return back()->withErrors(['email' => 'You cannot transfer money to yourself.']);

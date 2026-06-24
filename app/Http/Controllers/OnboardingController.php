@@ -121,42 +121,52 @@ class OnboardingController extends Controller
 
     public function createChildTalent(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'display_name' => 'required|string|max:255',
-            'date_of_birth' => 'required|date',
-            'nationality' => 'required|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'dominant_foot' => 'required|in:left,right,both',
-            'height_cm' => 'required|numeric|min:50|max:250',
-            'weight_kg' => 'required|numeric|min:20|max:200',
-            'position' => 'required|in:GK,CB,LB,RB,CDM,CM,CAM,LW,RW,ST,AMF,CMD,CF',
-            'bio' => 'nullable|string',
-        ]);
-
         $user = $request->user();
 
         if ($user->role !== 'parent') {
             abort(403);
         }
 
-        $child = User::create([
-            'name' => $validated['display_name'],
-            'email' => 'talent-'.uniqid().'@endotalent.com',
-            'password' => bcrypt(Str::random(16)),
-            'role' => 'talent',
-            'gender' => $user->gender,
+        $validated = $request->validate([
+            'talents' => 'required|array|min:1',
+            'talents.*.display_name' => 'required|string|max:255',
+            'talents.*.date_of_birth' => 'required|date',
+            'talents.*.nationality' => 'required|string|max:255',
+            'talents.*.city' => 'nullable|string|max:255',
+            'talents.*.country' => 'nullable|string|max:255',
+            'talents.*.latitude' => 'nullable|numeric',
+            'talents.*.longitude' => 'nullable|numeric',
+            'talents.*.dominant_foot' => 'required|in:left,right,both',
+            'talents.*.height_cm' => 'required|numeric|min:50|max:250',
+            'talents.*.weight_kg' => 'required|numeric|min:20|max:200',
+            'talents.*.position' => 'required|in:GK,CB,LB,RB,CDM,CM,CAM,LW,RW,ST,AMF,CMD,CF',
+            'talents.*.bio' => 'nullable|string',
         ]);
 
-        $child->talentProfile()->create($validated);
+        $createdCount = 0;
 
-        $user->managedTalents()->attach($child->id);
+        foreach ($validated['talents'] as $talentData) {
+            $child = User::create([
+                'name' => $talentData['display_name'],
+                'email' => 'talent-'.uniqid().'@endotalent.com',
+                'password' => bcrypt(Str::random(16)),
+                'role' => 'talent',
+                'gender' => $user->gender,
+            ]);
+
+            $child->talentProfile()->create($talentData);
+
+            $user->managedTalents()->attach($child->id);
+            $createdCount++;
+        }
+
+        $message = $createdCount === 1
+            ? 'New child talent profile created successfully!'
+            : "{$createdCount} new child talent profiles created successfully!";
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'New child talent profile created successfully!',
+            'message' => $message,
         ]);
 
         return back();

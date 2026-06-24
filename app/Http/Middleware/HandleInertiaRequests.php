@@ -46,6 +46,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'role' => $request->user()->role,
                     'gender' => $request->user()->gender,
+                    'phone' => $request->user()->phone,
                     'wallet_balance' => (float) $request->user()->wallet_balance,
                     'layout' => $request->user()->layout,
                     'avatar_path' => $request->user()->avatar_path,
@@ -56,12 +57,17 @@ class HandleInertiaRequests extends Middleware
                             ->where('initiator_id', $request->user()->id)
                             ->orWhere('recipient_id', $request->user()->id);
                     })->where('sender_id', '!=', $request->user()->id)->whereNull('read_at')->count(),
+                    'recent_transactions' => $request->user()->walletTransactions()
+                        ->orderBy('created_at', 'desc')
+                        ->limit(5)
+                        ->get(),
+                    'followers_count' => $request->user()->followers()->count(),
                     'talent_profile' => $request->user()->talentProfile ? [
                         'id' => $request->user()->talentProfile->id,
                         'display_name' => $request->user()->talentProfile->display_name,
                         'position' => $request->user()->talentProfile->position,
                     ] : null,
-                    'managed_talents' => $request->user()->role === 'parent' ? $request->user()->managedTalents()->with('talentProfile')->get()->map(function ($talent) {
+                    'managed_talents' => $request->user()->role === 'parent' ? $request->user()->managedTalents()->with('talentProfile')->withCount('videos')->get()->map(function ($talent) {
                         return [
                             'id' => $talent->id,
                             'name' => $talent->name,
@@ -77,7 +83,7 @@ class HandleInertiaRequests extends Middleware
                                 'weight_kg' => $talent->talentProfile->weight_kg,
                                 'nationality' => $talent->talentProfile->nationality,
                             ] : null,
-                            'videos_count' => $talent->videos()->count(),
+                            'videos_count' => $talent->videos_count,
                         ];
                     }) : null,
                 ] : null,

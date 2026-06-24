@@ -73,9 +73,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Talent routes — scouts only
     Route::middleware('role:scout_club')->prefix('talents')->name('talents.')->group(function () {
         Route::get('/', [TalentController::class, 'index'])->name('index');
-        Route::get('{talent}', [TalentController::class, 'show'])->name('show');
         Route::post('{talent}/unlock', [TalentController::class, 'unlockContact'])->name('unlock');
     });
+
+    // Public detail viewing for authenticated users
+    Route::get('talents/{talent}', [TalentController::class, 'show'])->name('talents.show');
 
     // Wallet routes
     Route::prefix('wallet')->name('wallet.')->group(function () {

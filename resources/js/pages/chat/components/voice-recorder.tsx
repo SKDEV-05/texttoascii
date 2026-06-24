@@ -100,16 +100,27 @@ export default function VoiceRecorder({ onSend, disabled }: VoiceRecorderProps) 
     return (
         <div className="flex items-center gap-2">
             {isRecording ? (
-                <div className="flex items-center gap-3 bg-destructive/10 px-4 py-1.5 rounded-full border border-destructive/20 animate-pulse">
-                    <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping" />
-                    <span className="text-sm font-semibold text-red-600">{formatTime(recordingTime)}</span>
+                <div className="flex items-center gap-3 bg-destructive/10 px-4 py-1.5 rounded-full border border-destructive/20 animate-fade-in shadow-2xs">
+                    <div className="flex items-center gap-1 select-none">
+                        <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
+                        
+                        {/* Audio Waveform Micro-Visualizer */}
+                        <div className="flex items-end gap-[2px] h-3.5 px-0.5">
+                            <span className="w-[1.5px] h-2 bg-red-600 rounded-full animate-[pulse_0.6s_infinite_alternate]" />
+                            <span className="w-[1.5px] h-3.5 bg-red-600 rounded-full animate-[pulse_0.8s_infinite_alternate]" />
+                            <span className="w-[1.5px] h-1.5 bg-red-600 rounded-full animate-[pulse_0.5s_infinite_alternate]" />
+                            <span className="w-[1.5px] h-2.5 bg-red-600 rounded-full animate-[pulse_0.7s_infinite_alternate]" />
+                        </div>
+                    </div>
+                    
+                    <span className="text-sm font-bold text-red-600 font-mono leading-none">{formatTime(recordingTime)}</span>
                     
                     <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         onClick={cancelRecording}
-                        className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-all duration-200 active:scale-90 cursor-pointer"
                     >
                         <Trash2 className="h-4 w-4" />
                     </Button>
@@ -119,9 +130,9 @@ export default function VoiceRecorder({ onSend, disabled }: VoiceRecorderProps) 
                         variant="destructive"
                         size="icon"
                         onClick={stopRecording}
-                        className="h-8 w-8 rounded-full"
+                        className="h-8 w-8 rounded-full shadow-md shadow-destructive/20 transition-transform active:scale-90 cursor-pointer"
                     >
-                        <Square className="h-4 w-4 fill-white" />
+                        <Square className="h-3.5 w-3.5 fill-white border-0" />
                     </Button>
                 </div>
             ) : (
@@ -131,9 +142,9 @@ export default function VoiceRecorder({ onSend, disabled }: VoiceRecorderProps) 
                     size="icon"
                     disabled={disabled}
                     onClick={startRecording}
-                    className="h-11 w-11 rounded-full shrink-0 border-muted-foreground/20 hover:bg-muted"
+                    className="h-11 w-11 rounded-full shrink-0 border border-muted-foreground/15 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-103 active:scale-97 cursor-pointer"
                 >
-                    <Mic className="h-5 w-5 text-muted-foreground" />
+                    <Mic className="h-5 w-5" />
                 </Button>
             )}
         </div>

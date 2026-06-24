@@ -187,14 +187,14 @@ export default function VideoFeed({ videos }: Props) {
     const activeVideo = videos.find(v => v.id === openCommentsVideoId);
 
     return (
-        <AppLayout hideHeader={true} contentClassName="md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none bg-white">
-            <div className="relative h-screen w-full bg-white flex overflow-hidden">
+        <AppLayout hideHeader={true} contentClassName="md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none bg-background">
+            <div className="relative h-screen w-full bg-background flex overflow-hidden">
                 <Head title="Video Feed" />
                 
                 {/* Vertical snapping feed */}
                 <div 
                     ref={containerRef}
-                    className="flex-1 h-full snap-y snap-mandatory overflow-y-scroll scrollbar-hide flex flex-col bg-white"
+                    className="flex-1 h-full snap-y snap-mandatory overflow-y-scroll scrollbar-hide flex flex-col bg-background"
                 >
                     {videos.length > 0 ? (
                         videos.map((video, index) => (
@@ -216,11 +216,11 @@ export default function VideoFeed({ videos }: Props) {
                             </div>
                         ))
                     ) : (
-                        <div className="flex h-full w-full flex-col items-center justify-center text-zinc-900 gap-6 px-6 bg-white">
-                            <div className="p-6 rounded-3xl bg-white border border-zinc-200 text-center max-w-sm space-y-4 shadow-md">
+                        <div className="flex h-full w-full flex-col items-center justify-center text-foreground gap-6 px-6 bg-background">
+                            <div className="p-6 rounded-3xl bg-card border border-border text-center max-w-sm space-y-4 shadow-md">
                                 <Film className="h-12 w-12 text-primary mx-auto opacity-70 animate-pulse" />
                                 <h3 className="text-xl font-bold uppercase tracking-tight">No Videos Yet</h3>
-                                <p className="text-xs text-zinc-500 font-medium">
+                                <p className="text-xs text-muted-foreground font-medium">
                                     Be the first to upload and showcase football skills to scouts and clubs!
                                 </p>
                                 {canUpload && (
@@ -238,15 +238,15 @@ export default function VideoFeed({ videos }: Props) {
 
                 {/* Right side Comments Sidebar Drawer */}
                 {activeVideo && (
-                    <div className="w-[380px] h-full bg-white border-l border-zinc-200 flex flex-col text-zinc-900 z-40 transition-all duration-300">
+                    <div className="w-[380px] h-full bg-card border-l border-border flex flex-col text-foreground z-40 transition-all duration-300">
                         {/* Drawer Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-zinc-200">
+                        <div className="flex items-center justify-between p-4 border-b border-border">
                             <h3 className="font-extrabold text-sm uppercase tracking-tight">
                                 Comments ({activeVideo.comments?.length || 0})
                             </h3>
                             <button 
                                 onClick={() => setOpenCommentsVideoId(null)}
-                                className="p-1 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-all"
+                                className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -266,12 +266,12 @@ export default function VideoFeed({ videos }: Props) {
                                             </Avatar>
                                             <div className="flex-1 space-y-1">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-bold text-xs text-zinc-900">@{comment.user?.name}</span>
-                                                    <span className="text-[9px] text-zinc-500">
+                                                    <span className="font-bold text-xs text-foreground">@{comment.user?.name}</span>
+                                                    <span className="text-[9px] text-muted-foreground">
                                                         {formatRelativeDate(comment.created_at)}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs text-zinc-700 leading-relaxed">{comment.comment}</p>
+                                                <p className="text-xs text-foreground/90 leading-relaxed">{comment.comment}</p>
                                                 {user && (
                                                     <button
                                                         onClick={() => handleReplyClick(comment)}
@@ -285,23 +285,23 @@ export default function VideoFeed({ videos }: Props) {
 
                                         {/* Nested Replies */}
                                         {comment.replies && comment.replies.length > 0 && (
-                                            <div className="pl-6 space-y-3 border-l-2 border-zinc-100 ml-4">
+                                            <div className="pl-6 space-y-3 border-l-2 border-border ml-4">
                                                 {comment.replies.map((reply) => (
                                                     <div key={reply.id} className="flex items-start gap-3 text-left">
                                                         <Avatar className="h-7 w-7 border border-primary/10 shrink-0">
                                                             <AvatarImage src={reply.user?.avatar_path} />
-                                                            <AvatarFallback className="bg-zinc-200 text-zinc-700 text-[10px] font-bold uppercase">
+                                                            <AvatarFallback className="bg-muted text-muted-foreground text-[10px] font-bold uppercase">
                                                                 {reply.user?.name?.[0] || 'U'}
                                                             </AvatarFallback>
                                                         </Avatar>
                                                         <div className="flex-1 space-y-0.5">
                                                             <div className="flex items-center justify-between">
-                                                                <span className="font-bold text-[11px] text-zinc-800">@{reply.user?.name}</span>
-                                                                <span className="text-[8px] text-zinc-500">
+                                                                <span className="font-bold text-[11px] text-foreground">@{reply.user?.name}</span>
+                                                                <span className="text-[8px] text-muted-foreground">
                                                                     {formatRelativeDate(reply.created_at)}
                                                                 </span>
                                                             </div>
-                                                            <p className="text-xs text-zinc-600 leading-relaxed">{reply.comment}</p>
+                                                            <p className="text-xs text-muted-foreground leading-relaxed">{reply.comment}</p>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -310,7 +310,7 @@ export default function VideoFeed({ videos }: Props) {
                                     </div>
                                 ))
                             ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-2 py-20">
+                                <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2 py-20">
                                     <MessageCircle className="h-8 w-8 opacity-50" />
                                     <p className="text-xs font-medium">No comments yet. Be the first!</p>
                                 </div>
@@ -318,7 +318,7 @@ export default function VideoFeed({ videos }: Props) {
                         </div>
 
                         {/* Drawer Bottom Input bar */}
-                        <div className="p-4 border-t border-zinc-200 bg-zinc-50">
+                        <div className="p-4 border-t border-border bg-muted/30">
                             {user ? (
                                 <div className="space-y-2">
                                     {replyTo && (
@@ -340,7 +340,7 @@ export default function VideoFeed({ videos }: Props) {
                                             placeholder="Add comment..."
                                             value={commentData.comment}
                                             onChange={e => setCommentData('comment', e.target.value)}
-                                            className="bg-white border-zinc-200 rounded-xl h-10 text-xs focus-visible:ring-primary text-zinc-900 placeholder:text-zinc-400 flex-1"
+                                            className="bg-background border-border rounded-xl h-10 text-xs focus-visible:ring-primary text-foreground placeholder:text-muted-foreground/60 flex-1"
                                             required
                                         />
                                         <Button 
@@ -557,11 +557,11 @@ function VideoItem({
     };
 
     return (
-        <div className={`relative h-full w-full bg-white flex items-center p-4 transition-all duration-300 ${isCommentsOpen ? 'justify-start md:pl-24 pl-4' : 'justify-center'}`}>
+        <div className="relative h-full w-full bg-background flex items-center p-4 justify-center">
             {/* Flex container holding the player and the buttons side-by-side */}
             <div className="flex items-end h-full max-h-[85vh] gap-4">
                 {/* Aspect container for the video player card aspect-[9/16] */}
-                <div className="relative h-full aspect-[9/16] overflow-hidden rounded-3xl border border-zinc-200 shadow-xl bg-black flex items-center justify-center">
+                <div className="relative h-full aspect-[9/16] overflow-hidden rounded-3xl border border-border/20 shadow-xl bg-black flex items-center justify-center">
                     <video
                         ref={videoRef}
                         src={video.file_path}
@@ -601,27 +601,20 @@ function VideoItem({
                 <div className="flex flex-col items-center gap-4 pb-4 select-none">
                     {/* User profile with follow badge */}
                     <div className="relative flex flex-col items-center mb-2">
-                        <Avatar className="h-12 w-12 border border-zinc-200 shadow-sm">
+                        <Avatar className="h-12 w-12 border border-border shadow-sm">
                             <AvatarImage src={video.user?.avatar_path} />
-                            <AvatarFallback className="bg-zinc-100 text-zinc-700 font-bold text-sm uppercase">
+                            <AvatarFallback className="bg-muted text-muted-foreground font-bold text-sm uppercase">
                                 {video.talent_profile?.display_name?.[0] || 'T'}
                             </AvatarFallback>
                         </Avatar>
-                        {/* Hide follow button on own videos */}
-                        {(!user || user.id !== video.user_id) && (
+                        {/* Hide follow button on own videos and if already followed */}
+                        {(!user || user.id !== video.user_id) && !video.is_followed && (
                             <button
                                 onClick={() => onFollowToggle(video)}
-                                className={`absolute -bottom-1.5 rounded-full p-0.5 shadow-md hover:scale-110 transition-all ${
-                                    video.is_followed
-                                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                                        : 'bg-primary hover:bg-primary/90 text-white'
-                                }`}
-                                title={video.is_followed ? 'Unfollow' : 'Follow'}
+                                className="absolute -bottom-1.5 rounded-full p-0.5 shadow-md hover:scale-110 transition-all bg-primary hover:bg-primary/90 text-white"
+                                title="Follow"
                             >
-                                {video.is_followed
-                                    ? <span className="text-[9px] font-black px-1">✓</span>
-                                    : <Plus className="h-3.5 w-3.5 stroke-[3]" />
-                                }
+                                <Plus className="h-3.5 w-3.5 stroke-[3]" />
                             </button>
                         )}
                     </div>
@@ -631,10 +624,10 @@ function VideoItem({
                         onClick={() => onToggleLike(video)}
                         className="flex flex-col items-center gap-1 group"
                     >
-                        <div className={`h-11 w-11 rounded-full flex items-center justify-center transition-all shadow-sm ${video.is_liked ? 'bg-primary text-white scale-110' : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'}`}>
+                        <div className={`h-11 w-11 rounded-full flex items-center justify-center transition-all shadow-sm ${video.is_liked ? 'bg-primary text-white scale-110' : 'bg-muted text-foreground hover:bg-muted/80'}`}>
                             <Heart className={`h-5.5 w-5.5 ${video.is_liked ? 'fill-current' : ''}`} />
                         </div>
-                        <span className="text-xs font-bold text-zinc-500">{video.likes_count || 0}</span>
+                        <span className="text-xs font-bold text-muted-foreground">{video.likes_count || 0}</span>
                     </button>
 
                     {/* Comment button */}
@@ -642,18 +635,18 @@ function VideoItem({
                         onClick={() => onOpenComments(video.id)}
                         className="flex flex-col items-center gap-1 group"
                     >
-                        <div className={`h-11 w-11 rounded-full flex items-center justify-center transition-all shadow-sm ${isCommentsOpen ? 'bg-zinc-900 text-white scale-110' : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'}`}>
+                        <div className={`h-11 w-11 rounded-full flex items-center justify-center transition-all shadow-sm ${isCommentsOpen ? 'bg-foreground text-background scale-110' : 'bg-muted text-foreground hover:bg-muted/80'}`}>
                             <MessageCircle className="h-5.5 w-5.5" />
                         </div>
-                        <span className="text-xs font-bold text-zinc-500">{video.comments_count || 0}</span>
+                        <span className="text-xs font-bold text-muted-foreground">{video.comments_count || 0}</span>
                     </button>
 
                     {/* Share button */}
                     <button className="flex flex-col items-center gap-1 group">
-                        <div className="h-11 w-11 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-800 hover:bg-zinc-200 transition-all shadow-sm">
+                        <div className="h-11 w-11 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-muted/80 transition-all shadow-sm">
                             <Share2 className="h-5.5 w-5.5" />
                         </div>
-                        <span className="text-xs font-bold text-zinc-500">Share</span>
+                        <span className="text-xs font-bold text-muted-foreground">Share</span>
                     </button>
 
                     {/* Fullscreen Maximize button */}
@@ -662,10 +655,10 @@ function VideoItem({
                         className="flex flex-col items-center gap-1 group"
                         title="Fullscreen"
                     >
-                        <div className="h-11 w-11 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-800 hover:bg-zinc-200 transition-all shadow-sm">
-                            <Maximize2 className="h-5.5 w-5.5 text-zinc-850" />
+                        <div className="h-11 w-11 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-muted/80 transition-all shadow-sm">
+                            <Maximize2 className="h-5.5 w-5.5" />
                         </div>
-                        <span className="text-xs font-bold text-zinc-500">Full</span>
+                        <span className="text-xs font-bold text-muted-foreground">Full</span>
                     </button>
                 </div>
             </div>

@@ -212,3 +212,109 @@ test('guest cannot access the talents index', function () {
     $this->get(route('talents.index'))
         ->assertRedirect('/login');
 });
+
+test('talent cannot transfer money', function () {
+    $talent = User::factory()->create([
+        'role' => 'talent',
+        'wallet_balance' => 100.00,
+    ]);
+    $recipient = User::factory()->create([
+        'wallet_balance' => 0.00,
+    ]);
+
+    $this->actingAs($talent)
+        ->post(route('wallet.transfer'), [
+            'email' => $recipient->email,
+            'amount' => 40.00,
+        ])
+        ->assertStatus(403);
+
+    expect($talent->fresh()->wallet_balance)->toEqual(100.00);
+});
+
+test('parent cannot transfer money', function () {
+    $parent = User::factory()->create([
+        'role' => 'parent',
+        'wallet_balance' => 100.00,
+    ]);
+    $recipient = User::factory()->create([
+        'wallet_balance' => 0.00,
+    ]);
+
+    $this->actingAs($parent)
+        ->post(route('wallet.transfer'), [
+            'email' => $recipient->email,
+            'amount' => 40.00,
+        ])
+        ->assertStatus(403);
+
+    expect($parent->fresh()->wallet_balance)->toEqual(100.00);
+});
+
+test('parent can create multiple child talent profiles in a single request', function () {
+    $parent = User::factory()->create([
+        'role' => 'parent',
+    ]);
+
+    $this->actingAs($parent)
+        ->post(route('parent.talents.store'), [
+            'talents' => [
+                [
+                    'display_name' => 'First Star',
+                    'date_of_birth' => '2015-05-15',
+                    'nationality' => 'French',
+                    'dominant_foot' => 'right',
+                    'height_cm' => 140,
+                    'weight_kg' => 35,
+                    'position' => 'ST',
+                    'bio' => 'A promising young striker.',
+                ],
+                [
+                    'display_name' => 'Second Star',
+                    'date_of_birth' => '2016-08-20',
+                    'nationality' => 'Spanish',
+                    'dominant_foot' => 'left',
+                    'height_cm' => 135,
+                    'weight_kg' => 32,
+                    'position' => 'GK',
+                    'bio' => 'A fast reaction keeper.',
+                ],
+            ],
+        ])
+        ->assertRedirect();
+
+    expect($parent->managedTalents()->count())->toBe(2);
+
+    $children = $parent->managedTalents()->orderBy('id')->get();
+
+    expect($children[0]->role)->toBe('talent');
+    expect($children[0]->talentProfile->display_name)->toBe('First Star');
+    expect($children[0]->talentProfile->position)->toBe('ST');
+
+    expect($children[1]->role)->toBe('talent');
+    expect($children[1]->talentProfile->display_name)->toBe('Second Star');
+    expect($children[1]->talentProfile->position)->toBe('GK');
+});
+
+test('non-parent cannot create child talent profiles via parent store endpoint', function () {
+    $talent = User::factory()->create([
+        'role' => 'talent',
+    ]);
+
+    $this->actingAs($talent)
+        ->post(route('parent.talents.store'), [
+            'talents' => [
+                [
+                    'display_name' => 'Imposter',
+                    'date_of_birth' => '2015-05-15',
+                    'nationality' => 'French',
+                    'dominant_foot' => 'right',
+                    'height_cm' => 140,
+                    'weight_kg' => 35,
+                    'position' => 'ST',
+                    'bio' => 'A fake profile.',
+                ],
+            ],
+        ])
+        ->assertStatus(403);
+});

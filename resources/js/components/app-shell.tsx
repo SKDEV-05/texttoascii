@@ -7,7 +7,7 @@ type Props = {
 
 export function AppShell({ children }: Props) {
     return (
-        <SidebarProvider defaultOpen={true} style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
+        <SidebarProvider defaultOpen={false} style={{ '--sidebar-width': '16rem', '--sidebar-width-icon': '5.5rem' } as React.CSSProperties}>
             {children}
         </SidebarProvider>
     );

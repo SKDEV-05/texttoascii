@@ -1,16 +1,37 @@
-import { Link, usePage, router } from '@inertiajs/react';
-import { LayoutGrid, Video, MessageSquare, Users, Wallet, Search, Shield } from 'lucide-react';
-import { useState } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutGrid, Video, MessageSquare, Users, Wallet, Shield, Bell, LogIn } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavUser } from '@/components/nav-user';
-import { Button } from '@/components/ui/button';
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+
+// Date format helper matching wallet history format
+const formatRelativeDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (compareDate.getTime() === today.getTime()) {
+        return `Today at ${timeStr}`;
+    } else if (compareDate.getTime() === yesterday.getTime()) {
+        return `Yesterday at ${timeStr}`;
+    } else {
+        return `${date.toLocaleDateString()} ${timeStr}`;
+    }
+};
 
 export function AppSidebar({
     variant = 'sidebar',
@@ -24,14 +45,8 @@ export function AppSidebar({
     const { auth } = usePage<any>().props;
     const user = auth?.user;
     const { isCurrentUrl } = useCurrentUrl();
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.get(`/talents?search=${encodeURIComponent(searchQuery)}`);
-        }
-    };
+    const { state } = useSidebar();
+    const isCollapsed = state === 'collapsed';
 
     const mainNavItems = [
         {
@@ -84,97 +99,256 @@ export function AppSidebar({
     });
 
     return (
-        <Sidebar collapsible={collapsible} variant={variant} side={side} className="border-r border-zinc-100 bg-white" dir="ltr">
+        <Sidebar collapsible={collapsible} variant={variant} side={side} className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-linear" dir="ltr">
             {/* Header / Logo */}
-            <SidebarHeader className="p-0 flex flex-col">
-                <Link href="/" className="flex items-center gap-3 px-6 py-5 select-none">
-                    <AppLogoIcon className="size-11 text-primary shrink-0 transition-transform hover:rotate-12 duration-300" />
-                    <span className="font-black text-[18px] italic tracking-tight text-zinc-950 uppercase">
-                        EndoTalent
-                    </span>
+            <SidebarHeader className="py-6 flex items-center justify-center border-b border-sidebar-border/20">
+                <Link href="/" className="flex items-center justify-center select-none gap-3">
+                    <AppLogoIcon className="size-10 text-primary shrink-0 transition-transform hover:rotate-12 duration-300" />
+                    {!isCollapsed && (
+                        <span className="font-black text-[18px] italic tracking-tight text-foreground uppercase transition-all duration-200 overflow-hidden whitespace-nowrap">
+                            EndoTalent
+                        </span>
+                    )}
                 </Link>
-
-                {/* Search Bar — scouts only */}
-                {isScout && (
-                <form onSubmit={handleSearchSubmit} className="px-4 mb-4 select-none">
-                    <div className="relative w-full bg-zinc-100 rounded-full flex items-center px-4 py-2 text-zinc-500 gap-2 border border-transparent focus-within:border-zinc-200 focus-within:bg-white transition-all">
-                        <Search className="h-4 w-4 text-zinc-400 shrink-0" />
-                        <input
-                            type="text"
-                            placeholder="Search talents..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-none outline-none text-xs font-bold text-zinc-800 placeholder:text-zinc-400 w-full focus:ring-0 p-0"
-                        />
-                    </div>
-                </form>
-                )}
             </SidebarHeader>
 
             {/* Sidebar content */}
-            <SidebarContent className="px-2 py-0 gap-1 overflow-y-auto">
-                {activeNavItems.map((item) => {
-                    const isActive = isCurrentUrl(item.href);
-                    return (
-                        <Link 
-                            key={item.href}
-                            href={item.href} 
-                            className={`flex items-center gap-4 py-3 px-4 mx-2 rounded-xl transition-all duration-200 group ${
-                                isActive 
-                                    ? 'text-primary font-extrabold bg-primary/5' 
-                                    : 'text-zinc-700 font-bold hover:bg-zinc-50 hover:text-zinc-950'
-                            }`}
-                        >
-                            <item.icon className={`h-6 w-6 stroke-[2.5] transition-transform group-hover:scale-105 ${isActive ? 'text-primary' : 'text-zinc-400 group-hover:text-zinc-700'}`} />
-                            <span className="text-[15px] tracking-tight flex-1">{item.title}</span>
-                            {item.title === 'Messages' && user?.unread_count > 0 && (
-                                <span className="h-5 min-w-5 px-1.5 bg-primary text-primary-foreground text-[10px] font-black rounded-full flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
-                                    {user.unread_count}
-                                </span>
-                            )}
-                        </Link>
-                    );
-                })}
+            <SidebarContent className={`py-6 gap-2.5 flex flex-col ${isCollapsed ? 'items-center' : 'px-4'}`}>
+                <TooltipProvider delayDuration={0}>
+                    {activeNavItems.map((item) => {
+                        const isActive = isCurrentUrl(item.href);
+                        
+                        if (isCollapsed) {
+                            return (
+                                <Tooltip key={item.href}>
+                                    <TooltipTrigger asChild>
+                                        <Link 
+                                            href={item.href} 
+                                            className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 group ${
+                                                isActive 
+                                                    ? 'text-primary font-extrabold bg-primary/5' 
+                                                    : 'text-sidebar-foreground/80 font-bold hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                                            }`}
+                                        >
+                                            <div className="relative shrink-0 flex items-center justify-center">
+                                                <item.icon className={`h-6 w-6 stroke-[2.5] transition-transform group-hover:scale-105 ${isActive ? 'text-primary' : 'text-sidebar-foreground/40 group-hover:text-sidebar-foreground'}`} />
+                                                {item.title === 'Messages' && user?.unread_count > 0 && (
+                                                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary rounded-full animate-pulse shadow-sm shadow-primary/40" />
+                                                )}
+                                            </div>
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right">
+                                        {item.title}
+                                    </TooltipContent>
+                                </Tooltip>
+                            );
+                        }
 
-                {/* Guest Log In Banner */}
-                {!user && (
-                    <div className="px-4 py-6 mt-4 border-t border-zinc-100 flex flex-col gap-4 select-none">
-                        <p className="text-xs text-zinc-500 font-bold leading-relaxed">
-                            Log in to follow talents, like videos, and write comments.
-                        </p>
-                        <Link href="/login" className="w-full">
-                            <Button className="w-full bg-primary hover:bg-primary/90 text-white font-black rounded-xl uppercase tracking-wider h-12 text-sm shadow-md shadow-primary/20 transition-all hover:scale-[1.02]">
-                                Log In
-                            </Button>
-                        </Link>
-                    </div>
-                )}
+                        return (
+                            <Link 
+                                key={item.href}
+                                href={item.href} 
+                                className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-all duration-200 group ${
+                                    isActive 
+                                        ? 'text-primary font-extrabold bg-primary/5' 
+                                        : 'text-sidebar-foreground/80 font-bold hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                                }`}
+                            >
+                                <div className="relative shrink-0 flex items-center justify-center">
+                                    <item.icon className={`h-6 w-6 stroke-[2.5] transition-transform group-hover:scale-105 ${isActive ? 'text-primary' : 'text-sidebar-foreground/40 group-hover:text-sidebar-foreground'}`} />
+                                    {item.title === 'Messages' && user?.unread_count > 0 && (
+                                        <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary rounded-full animate-pulse shadow-sm shadow-primary/40" />
+                                    )}
+                                </div>
+                                <span className="text-[15px] font-bold tracking-tight flex-1 truncate">{item.title}</span>
+                                {item.title === 'Messages' && user?.unread_count > 0 && (
+                                    <span className="h-5 min-w-5 px-1.5 bg-primary text-primary-foreground text-[10px] font-black rounded-full flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
+                                        {user.unread_count}
+                                    </span>
+                                )}
+                            </Link>
+                        );
+                    })}
+
+                    {/* Notifications Trigger */}
+                    {user && (
+                        isCollapsed ? (
+                            <Tooltip>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <button className="relative flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 text-sidebar-foreground/80 font-bold hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer group">
+                                            <Bell className="h-6 w-6 stroke-[2.5] transition-transform group-hover:scale-105 text-sidebar-foreground/40 group-hover:text-sidebar-foreground" />
+                                            {(user.unread_count > 0 || (user.recent_transactions && user.recent_transactions.length > 0)) && (
+                                                <span className="absolute top-2.5 right-2.5 h-2.5 w-2.5 bg-primary rounded-full animate-pulse shadow-sm shadow-primary/40" />
+                                            )}
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-md border-muted-foreground/20 rounded-3xl bg-card text-foreground shadow-2xl p-6 text-left" dir="ltr">
+                                        <DialogHeader>
+                                            <DialogTitle className="text-2xl font-black italic uppercase tracking-tight flex items-center gap-2">
+                                                <Bell className="h-6 w-6 text-primary" /> Notifications
+                                            </DialogTitle>
+                                        </DialogHeader>
+                                        <div className="mt-4 space-y-6">
+                                            {/* Messages Section */}
+                                            <div className="space-y-3">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Messages</h3>
+                                                {user.unread_count > 0 ? (
+                                                    <div className="flex justify-between items-center bg-muted/40 p-4 rounded-2xl border border-border/50">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                                            <p className="text-sm font-bold">You have {user.unread_count} unread message{user.unread_count > 1 ? 's' : ''}</p>
+                                                        </div>
+                                                        <Link href="/chat">
+                                                            <button className="bg-primary hover:bg-primary/95 text-white font-extrabold text-xs uppercase px-4 py-2 rounded-xl transition-all hover:scale-[1.02] cursor-pointer">
+                                                                Open Chat
+                                                            </button>
+                                                        </Link>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-muted-foreground/60 font-semibold pl-1">No new messages.</p>
+                                                )}
+                                            </div>
+
+                                            {/* Wallet/Transaction Section */}
+                                            <div className="space-y-3">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Recent Transactions</h3>
+                                                {user.recent_transactions && user.recent_transactions.length > 0 ? (
+                                                    <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                                                        {user.recent_transactions.map((tx: any) => {
+                                                            const isCredit = Number(tx.amount) > 0;
+                                                            return (
+                                                                <div key={tx.id} className="flex justify-between items-center p-3 rounded-2xl bg-muted/30 border border-border/30">
+                                                                    <div className="text-left space-y-0.5">
+                                                                        <p className="text-xs font-bold uppercase tracking-tight line-clamp-1">{tx.description}</p>
+                                                                        <p className="text-[10px] text-muted-foreground font-semibold">{formatRelativeDate(tx.created_at)}</p>
+                                                                    </div>
+                                                                    <p className={`font-black text-xs shrink-0 pl-2 ${isCredit ? 'text-green-500' : 'text-red-500'}`}>
+                                                                        {isCredit ? '+' : ''}${Math.abs(Number(tx.amount)).toFixed(2)}
+                                                                    </p>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-muted-foreground/60 font-semibold pl-1">No recent transaction notifications.</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                                <TooltipContent side="right">
+                                    Notifications
+                                </TooltipContent>
+                            </Tooltip>
+                        ) : (
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <button className="flex items-center gap-4 py-3 px-4 rounded-xl transition-all duration-200 text-sidebar-foreground/80 font-bold hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer group w-full text-left">
+                                        <div className="relative shrink-0 flex items-center justify-center">
+                                            <Bell className="h-6 w-6 stroke-[2.5] transition-transform group-hover:scale-105 text-sidebar-foreground/40 group-hover:text-sidebar-foreground" />
+                                            {(user.unread_count > 0 || (user.recent_transactions && user.recent_transactions.length > 0)) && (
+                                                <span className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full animate-pulse" />
+                                            )}
+                                        </div>
+                                        <span className="text-[15px] font-bold tracking-tight flex-1 truncate">Notifications</span>
+                                        {(user.unread_count > 0 || (user.recent_transactions && user.recent_transactions.length > 0)) && (
+                                            <span className="h-5 min-w-5 px-1.5 bg-primary text-primary-foreground text-[10px] font-black rounded-full flex items-center justify-center">
+                                                {(user.unread_count || 0) + (user.recent_transactions?.length || 0)}
+                                            </span>
+                                        )}
+                                    </button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md border-muted-foreground/20 rounded-3xl bg-card text-foreground shadow-2xl p-6 text-left" dir="ltr">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-2xl font-black italic uppercase tracking-tight flex items-center gap-2">
+                                            <Bell className="h-6 w-6 text-primary" /> Notifications
+                                        </DialogTitle>
+                                    </DialogHeader>
+                                    <div className="mt-4 space-y-6">
+                                        {/* Messages Section */}
+                                        <div className="space-y-3">
+                                            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Messages</h3>
+                                            {user.unread_count > 0 ? (
+                                                <div className="flex justify-between items-center bg-muted/40 p-4 rounded-2xl border border-border/50">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                                        <p className="text-sm font-bold">You have {user.unread_count} unread message{user.unread_count > 1 ? 's' : ''}</p>
+                                                    </div>
+                                                    <Link href="/chat">
+                                                        <button className="bg-primary hover:bg-primary/95 text-white font-extrabold text-xs uppercase px-4 py-2 rounded-xl transition-all hover:scale-[1.02] cursor-pointer">
+                                                            Open Chat
+                                                        </button>
+                                                    </Link>
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-muted-foreground/60 font-semibold pl-1">No new messages.</p>
+                                            )}
+                                        </div>
+
+                                        {/* Wallet/Transaction Section */}
+                                        <div className="space-y-3">
+                                            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Recent Transactions</h3>
+                                            {user.recent_transactions && user.recent_transactions.length > 0 ? (
+                                                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                                                    {user.recent_transactions.map((tx: any) => {
+                                                        const isCredit = Number(tx.amount) > 0;
+                                                        return (
+                                                            <div key={tx.id} className="flex justify-between items-center p-3 rounded-2xl bg-muted/30 border border-border/30">
+                                                                <div className="text-left space-y-0.5">
+                                                                    <p className="text-xs font-bold uppercase tracking-tight line-clamp-1">{tx.description}</p>
+                                                                    <p className="text-[10px] text-muted-foreground font-semibold">{formatRelativeDate(tx.created_at)}</p>
+                                                                </div>
+                                                                <p className={`font-black text-xs shrink-0 pl-2 ${isCredit ? 'text-green-500' : 'text-red-500'}`}>
+                                                                    {isCredit ? '+' : ''}${Math.abs(Number(tx.amount)).toFixed(2)}
+                                                                </p>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-muted-foreground/60 font-semibold pl-1">No recent transaction notifications.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        )
+                    )}
+                </TooltipProvider>
             </SidebarContent>
 
             {/* Footer */}
-            <SidebarFooter className="p-0 mt-auto">
-                {/* User section if logged in */}
+            <SidebarFooter className="py-6 flex items-center justify-center border-t border-sidebar-border/20">
                 {user ? (
-                    <div className="px-2 py-4 border-t border-zinc-100">
-                        <NavUser />
-                    </div>
+                    <NavUser isSlim={isCollapsed} />
                 ) : (
-                    /* General Footer links matching TikTok */
-                    <div className="px-6 py-6 border-t border-zinc-100 flex flex-col gap-2 select-none">
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-bold text-zinc-400">
-                            <Link href="/about" className="hover:underline">About</Link>
-                            <Link href="/newsroom" className="hover:underline">Newsroom</Link>
-                            <Link href="/contact" className="hover:underline">Contact</Link>
-                            <Link href="/careers" className="hover:underline">Careers</Link>
+                    isCollapsed ? (
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link href="/login" className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 text-sidebar-foreground/80 font-bold hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer">
+                                        <LogIn className="h-6 w-6 stroke-[2.5] text-sidebar-foreground/40 hover:text-sidebar-foreground" />
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent side="right">
+                                    Log In
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    ) : (
+                        <div className="px-4 py-4 w-full flex flex-col gap-3 select-none text-left">
+                            <p className="text-xs text-muted-foreground font-bold leading-relaxed">
+                                Log in to follow talents, like videos, and write comments.
+                            </p>
+                            <Link href="/login" className="w-full">
+                                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-black rounded-xl uppercase tracking-wider h-11 text-xs shadow-md shadow-primary/20 transition-all hover:scale-[1.02]">
+                                    Log In
+                                </Button>
+                            </Link>
                         </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-bold text-zinc-400 mt-2">
-                            <Link href="/terms" className="hover:underline">Terms</Link>
-                            <Link href="/privacy" className="hover:underline">Privacy</Link>
-                        </div>
-                        <span className="text-[10px] font-bold text-zinc-400 mt-4 block">
-                            © {new Date().getFullYear()} EndoTalent
-                        </span>
-                    </div>
+                    )
                 )}
             </SidebarFooter>
         </Sidebar>

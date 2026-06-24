@@ -179,4 +179,33 @@ class User extends Authenticatable implements PasskeyUser
 
         return $this->activeSubscription()->exists();
     }
+
+    /**
+     * Get the user's avatar path. If no custom avatar is set, return the position-based character avatar.
+     */
+    public function getAvatarPathAttribute(?string $value): string
+    {
+        if ($value) {
+            return $value;
+        }
+
+        $profile = $this->talentProfile;
+        if ($profile && $profile->position) {
+            $pos = strtoupper($profile->position);
+            if ($pos === 'GK') {
+                return asset('/images/characters/Mamoru Endou (gardien).png');
+            }
+            if (in_array($pos, ['CB', 'LB', 'RB'])) {
+                return asset('/images/characters/Ichirouta Kazemaru (deffence).png');
+            }
+            if (in_array($pos, ['CDM', 'CM', 'CAM', 'AMF', 'CMD'])) {
+                return asset('/images/characters/Yuuto Kidou (milieu).png');
+            }
+            if (in_array($pos, ['LW', 'RW', 'ST', 'CF'])) {
+                return asset('/images/characters/YShuuya Gouenji (Attack).png');
+            }
+        }
+
+        return asset('/images/characters/Yuuto Kidou (milieu).png');
+    }
 }

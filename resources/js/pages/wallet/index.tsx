@@ -40,6 +40,7 @@ const formatRelativeDate = (dateString: string) => {
 export default function WalletIndex({ transactions }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const user = auth.user;
+    const isRestrictedRole = user?.role === 'talent' || user?.role === 'parent';
 
     const topupForm = useForm({
         amount: '',
@@ -140,58 +141,60 @@ export default function WalletIndex({ transactions }: Props) {
                     <div className="md:col-span-2 space-y-6">
                         
                         {/* Transfer Credits form */}
-                        <Card className="border-muted-foreground/20 rounded-3xl bg-card shadow-sm p-8">
-                            <CardHeader className="p-0 mb-6">
-                                <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
-                                    <Send className="h-5 w-5 text-primary" /> Send Credits
-                                </CardTitle>
-                                <CardDescription className="font-medium text-xs">
-                                    Transfer funds to another user instantly via their registered email address.
-                                </CardDescription>
-                            </CardHeader>
-                            <form onSubmit={handleTransfer} className="space-y-4">
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="grid gap-2 text-left">
-                                        <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest opacity-70">Recipient Email</Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="scout@club.com"
-                                            value={transferForm.data.email}
-                                            onChange={e => transferForm.setData('email', e.target.value)}
-                                            className="h-11 rounded-xl"
-                                            required
-                                        />
-                                        {transferForm.errors.email && (
-                                            <p className="text-xs text-destructive font-bold">{transferForm.errors.email}</p>
-                                        )}
+                        {!isRestrictedRole && (
+                            <Card className="border-muted-foreground/20 rounded-3xl bg-card shadow-sm p-8">
+                                <CardHeader className="p-0 mb-6">
+                                    <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+                                        <Send className="h-5 w-5 text-primary" /> Send Credits
+                                    </CardTitle>
+                                    <CardDescription className="font-medium text-xs">
+                                        Transfer funds to another user instantly via their registered email address.
+                                    </CardDescription>
+                                </CardHeader>
+                                <form onSubmit={handleTransfer} className="space-y-4">
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div className="grid gap-2 text-left">
+                                            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest opacity-70">Recipient Email</Label>
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                placeholder="scout@club.com"
+                                                value={transferForm.data.email}
+                                                onChange={e => transferForm.setData('email', e.target.value)}
+                                                className="h-11 rounded-xl"
+                                                required
+                                            />
+                                            {transferForm.errors.email && (
+                                                <p className="text-xs text-destructive font-bold">{transferForm.errors.email}</p>
+                                            )}
+                                        </div>
+                                        <div className="grid gap-2 text-left">
+                                            <Label htmlFor="amount" className="text-xs font-bold uppercase tracking-widest opacity-70">Amount ($)</Label>
+                                            <Input
+                                                id="amount"
+                                                type="number"
+                                                min="1"
+                                                placeholder="50"
+                                                value={transferForm.data.amount}
+                                                onChange={e => transferForm.setData('amount', e.target.value)}
+                                                className="h-11 rounded-xl"
+                                                required
+                                            />
+                                            {transferForm.errors.amount && (
+                                                <p className="text-xs text-destructive font-bold">{transferForm.errors.amount}</p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="grid gap-2 text-left">
-                                        <Label htmlFor="amount" className="text-xs font-bold uppercase tracking-widest opacity-70">Amount ($)</Label>
-                                        <Input
-                                            id="amount"
-                                            type="number"
-                                            min="1"
-                                            placeholder="50"
-                                            value={transferForm.data.amount}
-                                            onChange={e => transferForm.setData('amount', e.target.value)}
-                                            className="h-11 rounded-xl"
-                                            required
-                                        />
-                                        {transferForm.errors.amount && (
-                                            <p className="text-xs text-destructive font-bold">{transferForm.errors.amount}</p>
-                                        )}
-                                    </div>
-                                </div>
-                                <Button 
-                                    type="submit" 
-                                    className="w-full h-12 rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-primary/20 mt-2"
-                                    disabled={transferForm.processing}
-                                >
-                                    Confirm Transfer
-                                </Button>
-                            </form>
-                        </Card>
+                                    <Button 
+                                        type="submit" 
+                                        className="w-full h-12 rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-primary/20 mt-2"
+                                        disabled={transferForm.processing}
+                                    >
+                                        Confirm Transfer
+                                    </Button>
+                                </form>
+                            </Card>
+                        )}
 
                         {/* Transactions History */}
                         <Card className="border-muted-foreground/20 rounded-3xl bg-card shadow-sm p-8">
