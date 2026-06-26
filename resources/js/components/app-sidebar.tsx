@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Video, MessageSquare, Users, Wallet, Shield, Bell, LogIn } from 'lucide-react';
+import { LayoutGrid, Video, MessageSquare, Users, Wallet, Shield, Bell, LogIn, UserCircle, Trophy } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -55,6 +55,13 @@ export function AppSidebar({
             icon: Video,
         },
         {
+            title: 'Profil',
+            href: '/talents/profil',
+            icon: UserCircle,
+            authRequired: true,
+            talentOnly: true,
+        },
+        {
             title: 'Find Talents',
             href: '/talents',
             icon: Users,
@@ -66,6 +73,12 @@ export function AppSidebar({
             href: '/chat',
             icon: MessageSquare,
             authRequired: true,
+        },
+        {
+            title: 'Leaderboard',
+            href: '/leaderboard',
+            icon: Trophy,
+            authRequired: false,
         },
         {
             title: 'Wallet',
@@ -91,10 +104,12 @@ export function AppSidebar({
     // Filter items based on auth status and role
     const isScout = user?.role === 'scout_club';
     const isAdmin = user?.role === 'admin';
+    const isTalent = user?.role === 'talent';
     const activeNavItems = mainNavItems.filter(item => {
         if (item.authRequired && !user) return false;
         if (item.scoutOnly && !isScout) return false;
         if (item.adminOnly && !isAdmin) return false;
+        if (item.talentOnly && !isTalent) return false;
         return true;
     });
 

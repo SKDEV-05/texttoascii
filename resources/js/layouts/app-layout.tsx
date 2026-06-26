@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import { echo } from '@laravel/echo-react';
 import CallModal from '@/pages/chat/components/call-modal';
+import GlobalChatbot from '@/components/global-chatbot';
 
 export default function AppLayout({
     breadcrumbs = [],
@@ -100,6 +101,7 @@ export default function AppLayout({
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs} hideHeader={hideHeader} contentClassName={contentClassName}>
             {children}
+            <GlobalChatbot />
             {isCallOpen && conversationId !== null && (
                 <CallModal
                     isOpen={isCallOpen}

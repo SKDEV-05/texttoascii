@@ -29,6 +29,7 @@ interface Props {
         gender?: string;
         dominant_foot?: string;
         search?: string;
+        min_score?: string;
     };
 }
 
@@ -37,6 +38,7 @@ export default function TalentsIndex({ talents, filters }: Props) {
     const [position, setPosition] = useState(filters.position || '');
     const [gender, setGender] = useState(filters.gender || '');
     const [dominantFoot, setDominantFoot] = useState(filters.dominant_foot || '');
+    const [minScore, setMinScore] = useState(filters.min_score || '');
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,6 +51,7 @@ export default function TalentsIndex({ talents, filters }: Props) {
             position,
             gender,
             dominant_foot: dominantFoot,
+            min_score: minScore,
             ...newParams
         }, {
             preserveState: true,
@@ -60,6 +63,7 @@ export default function TalentsIndex({ talents, filters }: Props) {
         setPosition('');
         setGender('');
         setDominantFoot('');
+        setMinScore('');
         router.get('/talents');
     };
 
@@ -69,9 +73,14 @@ export default function TalentsIndex({ talents, filters }: Props) {
             <div className="container mx-auto py-10 px-6 space-y-10 max-w-6xl text-left">
                 
                 {/* Header */}
-                <div>
-                    <h1 className="text-4xl font-black italic uppercase tracking-tight">FIND TALENTS</h1>
-                    <p className="text-muted-foreground text-sm font-medium">Search and filters scouts and clubs looking for the next star.</p>
+                <div className="flex justify-between items-end">
+                    <div>
+                        <h1 className="text-4xl font-black italic uppercase tracking-tight">FIND TALENTS</h1>
+                        <p className="text-muted-foreground text-sm font-medium">Search and filters scouts and clubs looking for the next star.</p>
+                    </div>
+                    <Button asChild variant="outline" className="h-11 rounded-xl font-bold uppercase tracking-wider border-primary text-primary hover:bg-primary/10">
+                        <Link href="/talents/compare">Compare Talents</Link>
+                    </Button>
                 </div>
 
                 {/* Filters */}
@@ -90,7 +99,7 @@ export default function TalentsIndex({ talents, filters }: Props) {
                             <Button type="submit" className="h-11 px-6 rounded-xl font-bold">Search</Button>
                         </div>
                         
-                        <div className="grid gap-4 sm:grid-cols-4 pt-2">
+                        <div className="grid gap-4 sm:grid-cols-5 pt-2">
                             {/* Position filter */}
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Position</label>
@@ -144,7 +153,26 @@ export default function TalentsIndex({ talents, filters }: Props) {
                                 </select>
                             </div>
 
-                            <div className="flex items-end">
+                            {/* Minimum AI Score filter */}
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Min AI Score</label>
+                                <select
+                                    value={minScore}
+                                    onChange={e => {
+                                        setMinScore(e.target.value);
+                                        applyFilters({ min_score: e.target.value });
+                                    }}
+                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                >
+                                    <option value="">Any Score</option>
+                                    <option value="60">60+ (Good)</option>
+                                    <option value="75">75+ (Very Good)</option>
+                                    <option value="85">85+ (Excellent)</option>
+                                    <option value="90">90+ (Elite)</option>
+                                </select>
+                            </div>
+
+                            <div className="flex items-end col-span-full sm:col-span-1">
                                 <Button
                                     type="button"
                                     onClick={clearFilters}

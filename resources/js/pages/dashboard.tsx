@@ -12,6 +12,74 @@ import { Trophy, Plus, Users, Search, Wallet, UserCheck, Video, Coins, Star, Arr
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputError from '@/components/input-error';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+// --- Chart Dummy Data ---
+const positionData = [
+    { name: 'ST', value: 340 },
+    { name: 'CM', value: 280 },
+    { name: 'CB', value: 210 },
+    { name: 'LW/RW', value: 190 },
+    { name: 'GK', value: 100 },
+];
+
+const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+const topScoreData = [
+    { name: 'Y. En-Nesyri', score: 92, potential: 96 },
+    { name: 'B. El Khannouss', score: 88, potential: 95 },
+    { name: 'A. Ounahi', score: 85, potential: 91 },
+    { name: 'I. Saibari', score: 83, potential: 89 },
+    { name: 'C. Riad', score: 81, potential: 88 },
+];
+
+function ScoutPositionChart() {
+    return (
+        <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+                <Pie
+                    data={positionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                >
+                    {positionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                </Pie>
+                <RechartsTooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ fontWeight: 'bold' }}
+                />
+            </PieChart>
+        </ResponsiveContainer>
+    );
+}
+
+function ScoutScoreChart() {
+    return (
+        <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+                data={topScoreData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold' }} tickMargin={10} stroke="hsl(var(--muted-foreground))" />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" domain={[60, 100]} />
+                <RechartsTooltip 
+                    cursor={{ fill: 'hsl(var(--muted-foreground)/0.1)' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Bar dataKey="score" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Current Score" barSize={32} />
+                <Bar dataKey="potential" fill="hsl(var(--primary)/0.3)" radius={[4, 4, 0, 0]} name="Potential" barSize={32} />
+            </BarChart>
+        </ResponsiveContainer>
+    );
+}
 
 const COUNTRIES = [
     "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
@@ -417,54 +485,72 @@ export default function Dashboard() {
                     )}
                 </div>
             ) : user.role === 'scout' || user.role === 'club' || user.role === 'scout_club' ? (
-                // 2. Scout Dashboard
+                // 2. Scout Dashboard with Recharts Analytics
                 <div className="space-y-8">
                     <div className="relative pl-0 md:pl-4">
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full hidden md:block shadow-[0_0_10px_rgba(var(--primary),0.5)]"></div>
                         <h1 className="text-3xl font-black italic uppercase tracking-tight bg-gradient-to-r from-foreground via-foreground/95 to-primary/80 bg-clip-text text-transparent">
-                            SCOUT PORTAL
+                            SCOUT ANALYTICS
                         </h1>
-                        <p className="text-muted-foreground/80 text-sm font-medium mt-0.5">Discover new football stars and unlock their direct contact details.</p>
+                        <p className="text-muted-foreground/80 text-sm font-medium mt-0.5">Explore platform metrics and discover top AI-rated talents.</p>
                     </div>
 
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Search Card */}
-                        <Card className="border border-muted-foreground/15 p-8 shadow-md hover:shadow-xl hover:-translate-y-1 bg-card/75 backdrop-blur-xs transition-all duration-300 flex flex-col justify-between rounded-3xl">
-                            <div className="space-y-3">
-                                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                                    <Search className="h-5 w-5" />
-                                </div>
-                                <h3 className="text-xl font-bold tracking-tight uppercase text-foreground">Talent Search</h3>
-                                <p className="text-sm text-muted-foreground/80 leading-relaxed">
-                                    Browse through our database of player profiles, filter by position, height, foot, and locate the talent you need.
-                                </p>
+                    {/* Analytics KPI Row */}
+                    <div className="grid gap-4 md:grid-cols-4">
+                        <Card className="border border-muted-foreground/15 p-6 shadow-md bg-card/75 backdrop-blur-xs rounded-3xl flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Total Talents</h3>
+                                <Users className="h-5 w-5 text-primary" />
                             </div>
-                            <Button asChild className="h-12 rounded-xl font-bold uppercase tracking-wider mt-8 hover:scale-102 active:scale-98 shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all cursor-pointer">
-                                <a href="/talents">Open Directory</a>
-                            </Button>
+                            <p className="text-3xl font-black text-foreground mt-4">1,248</p>
+                            <p className="text-xs text-green-500 font-bold mt-1">+12% this month</p>
+                        </Card>
+                        <Card className="border border-muted-foreground/15 p-6 shadow-md bg-card/75 backdrop-blur-xs rounded-3xl flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">AI Analyses</h3>
+                                <Video className="h-5 w-5 text-primary" />
+                            </div>
+                            <p className="text-3xl font-black text-foreground mt-4">5,892</p>
+                            <p className="text-xs text-green-500 font-bold mt-1">+24% this month</p>
+                        </Card>
+                        <Card className="border border-muted-foreground/15 p-6 shadow-md bg-card/75 backdrop-blur-xs rounded-3xl flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Avg AI Score</h3>
+                                <Star className="h-5 w-5 text-primary" />
+                            </div>
+                            <p className="text-3xl font-black text-foreground mt-4">76.4</p>
+                            <p className="text-xs text-muted-foreground font-bold mt-1">Platform average</p>
+                        </Card>
+                        <Card className="border border-muted-foreground/15 p-6 shadow-md bg-card/75 backdrop-blur-xs rounded-3xl flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Wallet Balance</h3>
+                                <Wallet className="h-5 w-5 text-primary" />
+                            </div>
+                            <p className="text-3xl font-black text-foreground mt-4">${Number(user.wallet_balance).toFixed(2)}</p>
+                            <Link href="/wallet" className="text-xs text-primary font-bold mt-1 hover:underline">Manage Wallet</Link>
+                        </Card>
+                    </div>
+
+                    {/* Charts Row */}
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {/* Position Distribution */}
+                        <Card className="border border-muted-foreground/15 p-6 shadow-md bg-card/75 backdrop-blur-xs rounded-3xl lg:col-span-1">
+                            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-6">Talents By Position</h3>
+                            <div className="h-[250px] w-full">
+                                <ScoutPositionChart />
+                            </div>
                         </Card>
 
-                        {/* Wallet Card */}
-                        <Card className="border border-muted-foreground/15 p-8 shadow-md hover:shadow-xl hover:-translate-y-1 bg-card/75 backdrop-blur-xs transition-all duration-300 flex flex-col justify-between rounded-3xl">
-                            <div className="space-y-3">
-                                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                                    <Wallet className="h-5 w-5" />
-                                </div>
-                                <h3 className="text-xl font-bold tracking-tight uppercase text-foreground">My Wallet Balance</h3>
-                                <p className="text-sm text-muted-foreground/80 leading-relaxed">
-                                    Keep your wallet credited to instantly unlock direct email and phone numbers for your top talent choices.
-                                </p>
-                            </div>
-                            <div className="mt-8 flex items-center justify-between gap-4">
-                                <div>
-                                    <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Available Credits</p>
-                                    <p className="text-3xl font-black bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent drop-shadow-xs mt-1">
-                                        ${Number(user.wallet_balance).toFixed(2)}
-                                    </p>
-                                </div>
-                                <Button asChild variant="outline" className="h-12 px-5 rounded-xl font-bold border-muted-foreground/15 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200">
-                                    <a href="/wallet">Manage Wallet</a>
+                        {/* Top Scorers Overview */}
+                        <Card className="border border-muted-foreground/15 p-6 shadow-md bg-card/75 backdrop-blur-xs rounded-3xl lg:col-span-2">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Top AI Rated Talents</h3>
+                                <Button asChild variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold cursor-pointer">
+                                    <Link href="/talents">View All</Link>
                                 </Button>
+                            </div>
+                            <div className="h-[250px] w-full">
+                                <ScoutScoreChart />
                             </div>
                         </Card>
                     </div>

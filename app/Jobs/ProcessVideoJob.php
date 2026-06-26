@@ -34,8 +34,10 @@ class ProcessVideoJob implements ShouldQueue
         $thumbnailPath = 'thumbnails/'.$this->video->id.'.jpg';
 
         try {
-            $ffmpeg = FFMpeg::fromDisk('local')
+            $ffmpeg = FFMpeg::fromDisk('public')
                 ->open($this->video->file_path);
+
+            $duration = $ffmpeg->getDurationInSeconds() ?: 5;
 
             // Detect orientation
             $dimensions = $ffmpeg->getVideoStream()->getDimensions();
@@ -43,27 +45,59 @@ class ProcessVideoJob implements ShouldQueue
 
             // Transcode
             $ffmpeg->export()
-                ->toDisk('s3')
+                ->toDisk('public')
                 ->inFormat($lowBitrateFormat)
                 ->save($tempPath);
 
-            // Generate thumbnail
-            $ffmpeg->getFrameFromSeconds(1)
+            // Generate thumbnail (use fresh instance)
+            $ffmpegThumb = FFMpeg::fromDisk('public')->open($this->video->file_path);
+            $ffmpegThumb->getFrameFromSeconds(1)
                 ->export()
-                ->toDisk('s3')
+                ->toDisk('public')
                 ->save($thumbnailPath);
+
+            // Extract frames for Gemini Vision analysis
+            $sec1 = max(1, (int)($duration * 0.25));
+            $sec2 = max(2, (int)($duration * 0.60));
+
+            $frameLocal1 = 'frame1_'.$this->video->id.'.jpg';
+            $frameLocal2 = 'frame2_'.$this->video->id.'.jpg';
+
+            try {
+                $ffmpegFrame1 = FFMpeg::fromDisk('public')->open($this->video->file_path);
+                $ffmpegFrame1->getFrameFromSeconds($sec1)->export()->toDisk('local')->save($frameLocal1);
+
+                $ffmpegFrame2 = FFMpeg::fromDisk('public')->open($this->video->file_path);
+                $ffmpegFrame2->getFrameFromSeconds($sec2)->export()->toDisk('local')->save($frameLocal2);
+
+                $path1 = Storage::disk('local')->path($frameLocal1);
+                $path2 = Storage::disk('local')->path($frameLocal2);
+
+                $gemini = new \App\Services\GeminiService();
+                $aiAnalysis = $gemini->analyzeVideoFrames($this->video, [$path1, $path2]);
+            } catch (\Exception $ex) {
+                \Illuminate\Support\Facades\Log::error('Frame extraction / AI analysis failed: ' . $ex->getMessage());
+                $aiAnalysis = null;
+            }
+
+            // Clean up temporary frames
+            Storage::disk('local')->delete($frameLocal1);
+            Storage::disk('local')->delete($frameLocal2);
+
+            $oldFilePath = $this->video->file_path;
 
             $this->video->update([
                 'file_path' => $tempPath,
                 'thumbnail_path' => $thumbnailPath,
                 'orientation' => $orientation,
                 'status' => 'ready',
-                'duration_seconds' => $ffmpeg->getDurationInSeconds(),
+                'duration_seconds' => $duration,
+                'ai_analysis' => $aiAnalysis,
             ]);
 
-            // Clean up original local file if it's different
-            if (Storage::disk('local')->exists($this->video->file_path)) {
-                Storage::disk('local')->delete($this->video->file_path);
+            // Clean up original public file if it's different
+            if ($oldFilePath !== $tempPath && Storage::disk('public')->exists($oldFilePath)) {
+                Storage::disk('public')->delete($oldFilePath);
             }
 
         } catch (\Exception $e) {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CallController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\CopilotController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ReportController;
@@ -63,6 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Video interaction routes (auth required)
     Route::prefix('videos')->name('videos.')->group(function () {
         Route::post('/', [VideoController::class, 'store'])->name('store');
+        Route::delete('{video}', [VideoController::class, 'destroy'])->name('destroy');
         Route::post('{video}/comments', [VideoController::class, 'storeComment'])->name('comments.store');
         Route::post('{video}/like', [VideoController::class, 'toggleLike'])->name('like.toggle');
     });
@@ -76,8 +78,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('{talent}/unlock', [TalentController::class, 'unlockContact'])->name('unlock');
     });
 
+    // Talent own profile shortcut
+    Route::get('talents/profil', function () {
+        $user = auth()->user();
+        $profile = $user->talentProfile;
+        if ($profile) {
+            return redirect()->route('talents.show', $profile->id);
+        }
+        return redirect()->route('dashboard');
+    })->name('talents.profil');
+
     // Public detail viewing for authenticated users
+    Route::post('api/copilot', [CopilotController::class, 'ask'])->name('copilot.ask');
+    Route::get('leaderboard', [TalentController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('talents/compare', [TalentController::class, 'compare'])->name('talents.compare');
     Route::get('talents/{talent}', [TalentController::class, 'show'])->name('talents.show');
+    Route::get('talents/{talent}/cv', [TalentController::class, 'downloadCv'])->name('talents.cv');
 
     // Wallet routes
     Route::prefix('wallet')->name('wallet.')->group(function () {

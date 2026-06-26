@@ -32,6 +32,14 @@ class VideoController extends Controller
                 $video->is_followed = $user ? $followingIds->has($video->user_id) : false;
                 unset($video->likes);
 
+                // Format asset URLs
+                if ($video->file_path && !str_starts_with($video->file_path, 'http') && !str_starts_with($video->file_path, '/')) {
+                    $video->file_path = asset('storage/'.$video->file_path);
+                }
+                if ($video->thumbnail_path && !str_starts_with($video->thumbnail_path, 'http') && !str_starts_with($video->thumbnail_path, '/')) {
+                    $video->thumbnail_path = asset('storage/'.$video->thumbnail_path);
+                }
+
                 return $video;
             });
 
@@ -87,16 +95,19 @@ class VideoController extends Controller
         // Store file
         $path = $request->file('video')->store('videos', 'public');
 
-        Video::create([
+        $video = Video::create([
             'user_id' => $videoUserId,
             'talent_profile_id' => $talentProfileId,
             'title' => $validated['title'],
             'description' => $validated['description'],
-            'file_path' => '/storage/'.$path,
+            'file_path' => $path,
             'orientation' => 'vertical',
-            'status' => 'ready',
+            'status' => 'processing',
             'is_published' => true,
         ]);
+
+        // Dispatch background processing job (transcode + frame extraction + Gemini API)
+        \App\Jobs\ProcessVideoJob::dispatch($video);
 
         return back();
     }
@@ -106,6 +117,13 @@ class VideoController extends Controller
      */
     public function show(Video $video): Response
     {
+        if ($video->file_path && !str_starts_with($video->file_path, 'http') && !str_starts_with($video->file_path, '/')) {
+            $video->file_path = asset('storage/'.$video->file_path);
+        }
+        if ($video->thumbnail_path && !str_starts_with($video->thumbnail_path, 'http') && !str_starts_with($video->thumbnail_path, '/')) {
+            $video->thumbnail_path = asset('storage/'.$video->thumbnail_path);
+        }
+
         return Inertia::render('videos/show', [
             'video' => $video->load(['user', 'talentProfile', 'comments' => function ($query) {
                 $query->whereNull('parent_id')->with(['user', 'replies.user'])->latest();
@@ -150,4 +168,33 @@ class VideoController extends Controller
 
         return back();
     }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Video $video): RedirectResponse
+    {
+        $user = auth()->user();
+
+        // Check permission: owner of the video OR parent of the owner
+        $isOwner = $video->user_id === $user->id;
+        $isParent = $user->role === 'parent' && $user->managedTalents()->where('users.id', $video->user_id)->exists();
+
+        if (!$isOwner && !$isParent) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Delete from storage if exist
+        if ($video->file_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($video->file_path);
+        }
+        if ($video->thumbnail_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($video->thumbnail_path);
+        }
+
+        $video->delete();
+
+        return back();
+    }
 }
+

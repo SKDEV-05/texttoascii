@@ -62,6 +62,7 @@ class HandleInertiaRequests extends Middleware
                         ->limit(5)
                         ->get(),
                     'followers_count' => $request->user()->followers()->count(),
+                    'videos_count' => $request->user()->videos()->count(),
                     'talent_profile' => $request->user()->talentProfile ? [
                         'id' => $request->user()->talentProfile->id,
                         'display_name' => $request->user()->talentProfile->display_name,

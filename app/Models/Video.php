@@ -23,12 +23,14 @@ class Video extends Model
         'views_count',
         'status',
         'is_published',
+        'ai_analysis',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'duration_seconds' => 'integer',
         'views_count' => 'integer',
+        'ai_analysis' => 'array',
     ];
 
     public function user(): BelongsTo
