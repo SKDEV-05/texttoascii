@@ -77,15 +77,35 @@ export default function MediaPipeVideoPlayer({ src, className = "", videoRef: ex
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             try {
-                // MediaPipe requires strictly monotonically increasing timestamps. 
-                // video.currentTime might not change between RAF frames, which would throw an error.
+                // MediaPipe requires strictly monotonically increasing timestamps.
                 const timestamp = performance.now();
                 const results = landmarker.detectForVideo(video, timestamp);
 
                 if (results && results.landmarks && results.landmarks.length > 0) {
                     const landmarks = results.landmarks[0];
-                    const width = canvas.width;
-                    const height = canvas.height;
+                    
+                    // Calculer le décalage (letterboxing) dû à object-contain
+                    const videoWidth = video.videoWidth;
+                    const videoHeight = video.videoHeight;
+                    const containerWidth = canvas.width;
+                    const containerHeight = canvas.height;
+                    
+                    const videoRatio = videoWidth / videoHeight;
+                    const containerRatio = containerWidth / containerHeight;
+                    
+                    let drawWidth, drawHeight, offsetX, offsetY;
+                    
+                    if (videoRatio > containerRatio) {
+                        drawWidth = containerWidth;
+                        drawHeight = containerWidth / videoRatio;
+                        offsetX = 0;
+                        offsetY = (containerHeight - drawHeight) / 2;
+                    } else {
+                        drawWidth = containerHeight * videoRatio;
+                        drawHeight = containerHeight;
+                        offsetX = (containerWidth - drawWidth) / 2;
+                        offsetY = 0;
+                    }
 
                     // Define joint connections for the skeleton
                     const connections = [
@@ -105,20 +125,20 @@ export default function MediaPipeVideoPlayer({ src, className = "", videoRef: ex
                         const p2 = landmarks[j];
                         if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
                             ctx.beginPath();
-                            ctx.moveTo(p1.x * width, p1.y * height);
-                            ctx.lineTo(p2.x * width, p2.y * height);
+                            ctx.moveTo((p1.x * drawWidth) + offsetX, (p1.y * drawHeight) + offsetY);
+                            ctx.lineTo((p2.x * drawWidth) + offsetX, (p2.y * drawHeight) + offsetY);
                             ctx.stroke();
                         }
                     });
 
                     // Draw joints (points)
-                    ctx.shadowBlur = 0; // Reset shadow for crisp circles
+                    ctx.shadowBlur = 0;
                     landmarks.forEach((point: any, idx: number) => {
-                        // Skip face landmarks (0 to 10) to avoid clutter, focus on skeletal movement (>= 11)
+                        // Skip face landmarks (0 to 10) to avoid clutter
                         if (idx >= 11 && point.visibility > 0.5) {
                             ctx.beginPath();
-                            ctx.arc(point.x * width, point.y * height, 5, 0, 2 * Math.PI);
-                            ctx.fillStyle = '#34d399'; // Light emerald
+                            ctx.arc((point.x * drawWidth) + offsetX, (point.y * drawHeight) + offsetY, 5, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#34d399';
                             ctx.fill();
                             ctx.strokeStyle = '#ffffff';
                             ctx.lineWidth = 1.5;
