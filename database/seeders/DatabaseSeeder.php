@@ -18,8 +18,8 @@ class DatabaseSeeder extends Seeder
     {
         // Seed Admin Account
         $admin = User::create([
-            'name' => 'Bayan Admin',
-            'email' => 'admin@bayan.com',
+            'name' => 'EndoTalent Admin',
+            'email' => 'admin@endotalent.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'gender' => 'male',
@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
         // Seed Scout Club Account
         $scout = User::create([
             'name' => 'AC Milan Scout',
-            'email' => 'scout@bayan.com',
+            'email' => 'scout@endotalent.com',
             'password' => Hash::make('password'),
             'role' => 'scout_club',
             'gender' => 'male',
@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
         // Seed Talent Account
         $talent = User::create([
             'name' => 'Leo Messi Jr',
-            'email' => 'talent@bayan.com',
+            'email' => 'talent@endotalent.com',
             'password' => Hash::make('password'),
             'role' => 'talent',
             'gender' => 'male',
@@ -55,7 +55,7 @@ class DatabaseSeeder extends Seeder
         // Seed Parent Account
         $parent = User::create([
             'name' => 'Jorge Messi Sr',
-            'email' => 'parent@bayan.com',
+            'email' => 'parent@endotalent.com',
             'password' => Hash::make('password'),
             'role' => 'parent',
             'gender' => 'male',

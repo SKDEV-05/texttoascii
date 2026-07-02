@@ -5,7 +5,6 @@ import { Play, Trophy, Users, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
-import logoUrl from '@/assets/logo/endo-talent-logo.png';
 
 // Word-by-word stagger animations
 const sentence = {
@@ -129,39 +128,7 @@ export default function Welcome() {
         <div className="min-h-screen bg-background font-sans antialiased overflow-x-hidden relative">
             <Head title="Welcome to EndoTalent" />
 
-            {/* Symmetrical Left and Right Rotating Logo Watermarks */}
-            {/* Top Pair */}
-            <motion.img
-                src={logoUrl}
-                alt=""
-                className="absolute left-[-150px] top-[15%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] opacity-20 pointer-events-none z-0 select-none"
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-            />
-            <motion.img
-                src={logoUrl}
-                alt=""
-                className="absolute right-[-150px] top-[15%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] opacity-20 pointer-events-none z-0 select-none"
-                animate={{ rotate: -360 }}
-                transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-            />
-            
-            {/* Bottom Pair */}
-            <motion.img
-                src={logoUrl}
-                alt=""
-                className="absolute left-[-150px] top-[65%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] opacity-20 pointer-events-none z-0 select-none"
-                animate={{ rotate: -360 }}
-                transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
-            />
-            <motion.img
-                src={logoUrl}
-                alt=""
-                className="absolute right-[-150px] top-[65%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] opacity-20 pointer-events-none z-0 select-none"
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
-            />
-            
+
             {/* Navigation */}
             <nav className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -200,6 +167,14 @@ export default function Welcome() {
 
             {/* Hero Section */}
             <section className="relative overflow-hidden pt-32 pb-24 lg:pt-52 lg:pb-40 bg-white dark:bg-black">
+                <div 
+                    className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+                    style={{ backgroundImage: "url('/images/first_page/first_page_picture.png')" }}
+                />
+                
+                {/* Overlay to ensure readability in dark/light mode */}
+                <div className="absolute inset-0 z-0 bg-white/5 dark:bg-black/75" />
+
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-[0.2em] mb-8 animate-bounce select-none">
@@ -278,15 +253,6 @@ export default function Welcome() {
                         </div>
                     </div>
                 </div>
-                
-                {/* Modern Grid Background */}
-                <div className="absolute inset-0 z-0 opacity-5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]">
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
-                </div>
-                
-                {/* Background Decorations */}
-                <div className="absolute -top-24 -left-24 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px] animate-pulse" />
-                <div className="absolute top-1/2 -right-24 h-[600px] w-[600px] -translate-y-1/2 rounded-full bg-primary/15 blur-[150px] animate-pulse delay-700" />
             </section>
 
             {/* Features Section */}
