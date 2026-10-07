@@ -1,0 +1,15 @@
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAllCSharp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAllCSharp.AssemblyInfoInputs.cache
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAllCSharp.AssemblyInfo.cs
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAllCSharp.csproj.CoreCompileInputs.cache
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\bin\Debug\net10.0\LearnAllCSharp.exe
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\bin\Debug\net10.0\LearnAllCSharp.deps.json
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\bin\Debug\net10.0\LearnAllCSharp.runtimeconfig.json
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\bin\Debug\net10.0\LearnAllCSharp.dll
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\bin\Debug\net10.0\LearnAllCSharp.pdb
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAllCSharp.dll
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\refint\LearnAllCSharp.dll
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAllCSharp.pdb
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAllCSharp.genruntimeconfig.cache
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\ref\LearnAllCSharp.dll
+C:\Users\Saad Korma\source\repos\LearnAllCSharp\LearnAllCSharp\obj\Debug\net10.0\LearnAll.62CBF455.Up2Date
